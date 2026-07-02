@@ -1,0 +1,632 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Portal Barbero | Molina's"
+  description="Panel de administración para barberos."
+>
+  <main class="page-admin">
+    <div class="wrap">
+      
+      <!-- Cabecera -->
+      <header class="admin-header">
+        <h1 class="display" style="font-size: 2rem;">Portal Barbero</h1>
+        <p class="admin-subtitle">Suma cortes a las tarjetas de tus clientes.</p>
+        <a href="/escaner" class="btn btn-gold btn-full" style="margin-top: 1.5rem; font-size: 1.1rem; padding-block: 1.2rem;">
+          📷 Abrir Escáner QR
+        </a>
+        <p style="font-size: 0.75rem; color: var(--text-subtle); text-align: center; margin-top: 0.5rem;">Recomendado: escanea el QR del socio para sumar cortes automáticamente</p>
+      </header>
+
+      <!-- Bloqueo por PIN -->
+      <div id="pin-section" class="glass-panel admin-panel anim-pop d1" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-tilt-glare data-tilt-max-glare="0.3">
+        <h2 style="margin-bottom: 1rem; color: var(--text); transform: translateZ(30px);">Ingreso Seguro</h2>
+        <div class="field" style="transform: translateZ(20px);">
+          <label class="label" for="input-pin">PIN de Barbero</label>
+          <input
+            id="input-pin"
+            type="password"
+            class="input mono"
+            placeholder="****"
+            inputmode="numeric"
+            maxlength="4"
+          />
+        </div>
+        <p id="pin-error" class="error-msg" style="display:none; margin-top:0.5rem;">PIN incorrecto</p>
+        <button id="btn-pin" class="btn btn-gold btn-full" style="margin-top: 1.5rem;">Desbloquear Panel</button>
+      </div>
+
+      <!-- Buscador de Cliente (Oculto hasta poner PIN) -->
+      <div id="search-section" class="glass-panel admin-panel anim d1" style="display: none;" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-tilt-glare data-tilt-max-glare="0.3">
+        <h2 style="margin-bottom: 1rem; color: var(--text); transform: translateZ(30px);">Buscar Cliente</h2>
+        <div class="field" style="transform: translateZ(20px);">
+          <label class="label" for="input-rut">RUT del Cliente</label>
+          <input
+            id="input-rut"
+            type="text"
+            class="input mono"
+            placeholder="12.345.678-9"
+          />
+        </div>
+        <p id="search-error" class="error-msg" style="display:none; margin-top:0.5rem;"></p>
+        <button id="btn-search" class="btn btn-gold btn-full" style="margin-top: 1.5rem;">
+          <span id="btn-search-text">Buscar Cliente</span>
+          <span id="btn-search-loading" hidden>Buscando...</span>
+        </button>
+      </div>
+
+      <!-- Resultados y Sumar Punto (Oculto) -->
+      <div id="result-section" class="glass-panel admin-panel anim d2" style="display: none; margin-top: 1.5rem; border-color: var(--gold);" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-perspective="1000" data-tilt-glare data-tilt-max-glare="0.3">
+        <div class="client-info" style="transform: translateZ(40px);">
+          <p style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold);">Cliente Encontrado</p>
+          <h3 id="client-name" class="display" style="font-size: 1.5rem; margin-top: 0.2rem;">Nombre</h3>
+          <p id="client-rut" class="mono" style="color: var(--text-muted); font-size: 0.9rem;">RUT</p>
+        </div>
+
+        <div class="progress-box" style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 8px; margin-block: 1.5rem; text-align: center; transform: translateZ(20px);">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Cortes Actuales</p>
+          <p id="client-cortes" class="mono" style="font-size: 3rem; color: var(--gold); font-weight: 700; line-height: 1;">0<span style="font-size: 1.5rem; color: rgba(255,255,255,0.3);">/5</span></p>
+        </div>
+
+        <button id="btn-add" class="btn btn-gold btn-full" style="font-size: 1.1rem; padding-block: 1.5rem;">
+          <span id="btn-add-text">+1 Sumar Corte Ahora</span>
+          <span id="btn-add-loading" hidden>Guardando...</span>
+        </button>
+
+        <p id="add-success" style="color: var(--success); font-weight: 600; text-align: center; margin-top: 1rem; display: none;">
+          ¡Corte sumado exitosamente!
+        </p>
+      </div>
+
+      <!-- Directorio y Gestión de BD (Oculto hasta PIN) -->
+      <div id="directory-section" class="glass-panel admin-panel anim d3" style="display: none; margin-top: 2rem; border-top: 1px solid rgba(255, 215, 0, 0.2);">
+        <h2 style="font-size: 1.2rem; color: var(--gold); margin-bottom: 0.5rem;">Directorio de Clientes</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Gestiona y limpia la base de datos.</p>
+        
+        <button id="btn-load-dir" class="btn btn-ghost btn-full" style="margin-bottom: 1.5rem;">
+          <span id="btn-load-text">📂 Cargar todos los registros</span>
+          <span id="btn-load-loading" hidden>Cargando...</span>
+        </button>
+
+        <div id="dir-list" style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Items generados dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Campaña de Notificaciones (Spam del Local) -->
+      <div id="marketing-section" class="glass-panel admin-panel anim d3" style="display: none; margin-top: 2rem; border-top: 1px solid rgba(255, 215, 0, 0.2);">
+        <h2 style="font-size: 1.2rem; color: var(--gold); margin-bottom: 0.5rem;">📢 Campaña de Notificaciones (Spam del Local)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Envía un mensaje push instantáneo a todos los socios del club.</p>
+        
+        <div class="field" style="margin-bottom: 1rem;">
+          <label class="label" for="marketing-title">Título de la Notificación</label>
+          <input
+            id="marketing-title"
+            type="text"
+            class="input"
+            placeholder="Ej: ¡Promoción de mitad de semana! 💈"
+          />
+        </div>
+
+        <div class="field" style="margin-bottom: 1.5rem;">
+          <label class="label" for="marketing-body">Cuerpo del Mensaje</label>
+          <textarea
+            id="marketing-body"
+            class="input"
+            placeholder="Ej: Solo por hoy, 15% de descuento en barbas completas. ¡Reserva tu hora!"
+            style="min-height: 80px; resize: vertical; padding: 0.8rem;"
+          ></textarea>
+        </div>
+
+        <button id="btn-send-marketing" class="btn btn-gold btn-full">
+          <span id="btn-marketing-text">🚀 Enviar Notificación a Todos</span>
+          <span id="btn-marketing-loading" hidden>Enviando...</span>
+        </button>
+
+        <p id="marketing-success" style="color: var(--success); font-weight: 600; text-align: center; margin-top: 1rem; display: none;">
+          ¡Campaña enviada exitosamente a todos los suscriptores!
+        </p>
+      </div>
+
+      <!-- Ciclos de Notificaciones (Automático) -->
+      <div id="cycle-section" class="glass-panel admin-panel anim d4" style="display: none; margin-top: 2rem; border-top: 1px solid rgba(255, 215, 0, 0.2);">
+        <h2 style="font-size: 1.2rem; color: var(--gold); margin-bottom: 0.5rem;">⚙️ Ciclos Automáticos (QStash)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Configura un mensaje que se enviará repetidamente según la frecuencia elegida.</p>
+        
+        <div class="field" style="margin-bottom: 1rem;">
+          <label class="label" for="cycle-title">Título del Mensaje</label>
+          <input
+            id="cycle-title"
+            type="text"
+            class="input"
+            placeholder="Ej: Recuerda tu corte 💈"
+          />
+        </div>
+
+        <div class="field" style="margin-bottom: 1rem;">
+          <label class="label" for="cycle-body">Cuerpo del Mensaje</label>
+          <textarea
+            id="cycle-body"
+            class="input"
+            placeholder="Ej: Ya es hora de arreglar esa barba. ¡Te esperamos!"
+            style="min-height: 80px; resize: vertical; padding: 0.8rem;"
+          ></textarea>
+        </div>
+
+        <div class="field" style="margin-bottom: 1.5rem;">
+          <label class="label" for="cycle-freq">Frecuencia</label>
+          <select id="cycle-freq" class="input" style="padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
+            <option value="1">Cada 1 hora</option>
+            <option value="12">Cada 12 horas</option>
+            <option value="24" selected>Cada 24 horas</option>
+            <option value="48">Cada 48 horas (2 días)</option>
+            <option value="168">Cada 168 horas (1 semana)</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="cycle-active" style="width: 20px; height: 20px; accent-color: var(--gold);" />
+          <label for="cycle-active" style="color: var(--text); font-weight: 600;">Activar este ciclo</label>
+        </div>
+
+        <button id="btn-save-cycle" class="btn btn-gold btn-full">
+          <span id="btn-cycle-text">💾 Guardar Configuración</span>
+          <span id="btn-cycle-loading" hidden>Guardando...</span>
+        </button>
+
+        <p id="cycle-success" style="color: var(--success); font-weight: 600; text-align: center; margin-top: 1rem; display: none;">
+          ¡Configuración de ciclo guardada exitosamente!
+        </p>
+      </div>
+
+    </div>
+  </main>
+</Base>
+
+<script>
+  let currentClientData: any = null;
+
+  // Secciones
+  const pinSec = document.getElementById('pin-section') as HTMLDivElement;
+  const searchSec = document.getElementById('search-section') as HTMLDivElement;
+  const resultSec = document.getElementById('result-section') as HTMLDivElement;
+
+  // Lógica de PIN
+  const btnPin = document.getElementById('btn-pin') as HTMLButtonElement;
+  const inputPin = document.getElementById('input-pin') as HTMLInputElement;
+  const pinError = document.getElementById('pin-error') as HTMLParagraphElement;
+
+  btnPin?.addEventListener('click', async () => {
+    const enteredPin = inputPin.value;
+    btnPin.disabled = true;
+    pinError.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/admin/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: enteredPin })
+      });
+      
+      const data = await res.json();
+
+      if (res.ok && data.valid) {
+        sessionStorage.setItem('barberPin', enteredPin);
+        pinSec.style.display = 'none';
+        searchSec.style.display = 'block';
+        document.getElementById('directory-section')!.style.display = 'block';
+        document.getElementById('marketing-section')!.style.display = 'block';
+        document.getElementById('cycle-section')!.style.display = 'block';
+      } else {
+        pinError.textContent = data.error || 'PIN incorrecto';
+        pinError.style.display = 'block';
+        inputPin.value = '';
+      }
+    } catch (e) {
+      pinError.textContent = 'Error al conectar con el servidor.';
+      pinError.style.display = 'block';
+    } finally {
+      btnPin.disabled = false;
+    }
+  });
+
+  inputPin?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') btnPin?.click();
+  });
+
+  // Utilidad de RUT
+  function formatRut(value: string): string {
+    let clean = value.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (clean.length === 0) return '';
+    const endsWithK = clean.endsWith('K');
+    clean = clean.replace(/K/g, '');
+    if (endsWithK) {
+      clean += 'K';
+    }
+    if (clean.length < 2) return clean;
+    const body = clean.slice(0, -1);
+    const dv   = clean.slice(-1);
+    return `${body.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}-${dv}`;
+  }
+
+  const inputRut = document.getElementById('input-rut') as HTMLInputElement;
+  inputRut?.addEventListener('input', () => {
+    inputRut.value = formatRut(inputRut.value);
+  });
+
+  // Lógica Buscar Cliente
+  const btnSearch = document.getElementById('btn-search') as HTMLButtonElement;
+  const btnSearchText = document.getElementById('btn-search-text') as HTMLSpanElement;
+  const btnSearchLoading = document.getElementById('btn-search-loading') as HTMLSpanElement;
+  const searchError = document.getElementById('search-error') as HTMLParagraphElement;
+
+  btnSearch?.addEventListener('click', async () => {
+    const rut = inputRut.value.trim().replace(/[^0-9kK]/gi, '').toUpperCase();
+    if (rut.length < 7) {
+      searchError.textContent = 'RUT inválido.';
+      searchError.style.display = 'block';
+      return;
+    }
+
+    searchError.style.display = 'none';
+    resultSec.style.display = 'none';
+    btnSearch.disabled = true;
+    btnSearchText.hidden = true;
+    btnSearchLoading.hidden = false;
+
+    try {
+      const res = await fetch(`/api/clientes/get-info?rut=${rut}`);
+
+      if (res.status === 404) {
+        searchError.textContent = 'Cliente no encontrado en el sistema.';
+        searchError.style.display = 'block';
+        return;
+      }
+
+      if (!res.ok) throw new Error('Error al conectar con la base de datos.');
+
+      const data = await res.json();
+      currentClientData = data;
+      
+      // Rellenar UI
+      (document.getElementById('client-name') as HTMLElement).textContent = currentClientData.nombre;
+      (document.getElementById('client-rut') as HTMLElement).textContent = currentClientData.rut_formateado;
+      (document.getElementById('client-cortes') as HTMLElement).innerHTML = `${currentClientData.cortes}<span style="font-size: 1.5rem; color: rgba(255,255,255,0.3);">/5</span>`;
+      
+      (document.getElementById('add-success') as HTMLElement).style.display = 'none';
+      
+      // Si ya tiene 5, bloquear botón
+      const btnAdd = document.getElementById('btn-add') as HTMLButtonElement;
+      const btnAddText = document.getElementById('btn-add-text') as HTMLSpanElement;
+      if (currentClientData.cortes >= 5) {
+        btnAdd.disabled = true;
+        btnAddText.textContent = "Este cliente ya tiene 5 cortes (Premio)";
+      } else {
+        btnAdd.disabled = false;
+        btnAddText.textContent = "+1 Sumar Corte Ahora";
+      }
+
+      resultSec.style.display = 'block';
+    } catch (e: any) {
+      searchError.textContent = e.message || 'Error de red.';
+      searchError.style.display = 'block';
+    } finally {
+      btnSearch.disabled = false;
+      btnSearchText.hidden = false;
+      btnSearchLoading.hidden = true;
+    }
+  });
+
+  // Lógica Sumar Corte
+  const btnAdd = document.getElementById('btn-add') as HTMLButtonElement;
+  const btnAddText = document.getElementById('btn-add-text') as HTMLSpanElement;
+  const btnAddLoading = document.getElementById('btn-add-loading') as HTMLSpanElement;
+  const addSuccess = document.getElementById('add-success') as HTMLParagraphElement;
+
+  btnAdd?.addEventListener('click', async () => {
+    if (!currentClientData) return;
+
+    btnAdd.disabled = true;
+    btnAddText.hidden = true;
+    btnAddLoading.hidden = false;
+
+    try {
+      const enteredPin = sessionStorage.getItem('barberPin') || '';
+      
+      const res = await fetch('/api/clientes/add-corte', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          rut: currentClientData.rut,
+          pin: enteredPin 
+        })
+      });
+
+      const resData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(resData.error || 'Error al actualizar en la base de datos.');
+      }
+
+      // Éxito
+      const nuevosCortes = resData.cortes;
+      currentClientData.cortes = nuevosCortes;
+      (document.getElementById('client-cortes') as HTMLElement).innerHTML = `${nuevosCortes}<span style="font-size: 1.5rem; color: rgba(255,255,255,0.3);">/5</span>`;
+      addSuccess.style.display = 'block';
+
+      if (nuevosCortes >= 5) {
+        btnAddText.textContent = "Este cliente ha alcanzado su premio (5 cortes)";
+        btnAdd.disabled = true;
+      } else {
+        setTimeout(() => {
+          btnAdd.disabled = false;
+          addSuccess.style.display = 'none';
+        }, 2500);
+      }
+
+    } catch (e: any) {
+      alert('Hubo un error al guardar: ' + e.message);
+      btnAdd.disabled = false;
+    } finally {
+      btnAddText.hidden = false;
+      btnAddLoading.hidden = true;
+    }
+  });
+
+  // ═══ Lógica de Directorio de Clientes ═══
+  const btnLoadDir = document.getElementById('btn-load-dir') as HTMLButtonElement;
+  const btnLoadText = document.getElementById('btn-load-text') as HTMLSpanElement;
+  const btnLoadLoading = document.getElementById('btn-load-loading') as HTMLSpanElement;
+  const dirList = document.getElementById('dir-list') as HTMLDivElement;
+
+  btnLoadDir?.addEventListener('click', async () => {
+    btnLoadDir.disabled = true;
+    btnLoadText.hidden = true;
+    btnLoadLoading.hidden = false;
+    dirList.innerHTML = '';
+
+    try {
+      const enteredPin = sessionStorage.getItem('barberPin') || '';
+      const res = await fetch(`/api/clientes/list?pin=${enteredPin}`);
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Error al cargar clientes.');
+      }
+
+      const clientes = await res.json();
+
+      if (clientes.length === 0) {
+        dirList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">No hay clientes registrados.</p>';
+        return;
+      }
+
+      // Renderizar clientes
+      clientes.forEach((cliente: any) => {
+        const div = document.createElement('div');
+        div.style.background = 'rgba(255,255,255,0.03)';
+        div.style.border = '1px solid rgba(255,255,255,0.1)';
+        div.style.borderRadius = 'var(--r-md)';
+        div.style.padding = '1rem';
+        div.style.display = 'flex';
+        div.style.alignItems = 'center';
+        div.style.justifyContent = 'space-between';
+        
+        const barberoName = cliente.barbero || cliente.Barbero || cliente.BARBERO || 'Sin asignar';
+        const info = document.createElement('div');
+        info.innerHTML = `
+          <h4 style="font-size:1rem; color:var(--text); margin-bottom:0.2rem;">${cliente.nombre}</h4>
+          <p class="mono" style="font-size:0.8rem; color:var(--text-muted);">${cliente.rut_formateado || cliente.rut}</p>
+          <div style="display:flex; gap:1rem; margin-top:0.4rem; align-items:center;">
+            <p style="font-size:0.8rem; color:var(--gold); font-weight:600;">Cortes: ${cliente.cortes}</p>
+            <span style="font-size:0.75rem; background:rgba(255,255,255,0.1); padding:0.1rem 0.5rem; border-radius:4px; color:var(--text-subtle);">💈 ${barberoName}</span>
+          </div>
+        `;
+
+        const btnDelete = document.createElement('button');
+        btnDelete.className = 'btn btn-ghost';
+        btnDelete.style.color = 'var(--danger)';
+        btnDelete.style.borderColor = 'rgba(255,70,70,0.2)';
+        btnDelete.style.padding = '0.5rem 1rem';
+        btnDelete.innerHTML = '🗑️ Eliminar';
+
+        btnDelete.addEventListener('click', async () => {
+          if (!confirm(`¿Estás seguro que quieres eliminar a ${cliente.nombre} para siempre?`)) return;
+          
+          btnDelete.disabled = true;
+          btnDelete.innerHTML = 'Borrando...';
+
+          try {
+            const enteredPin = sessionStorage.getItem('barberPin') || '';
+            const delRes = await fetch('/api/clientes/delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                rut: cliente.rut,
+                pin: enteredPin 
+              })
+            });
+
+            if (!delRes.ok) {
+              const errData = await delRes.json().catch(() => ({}));
+              throw new Error(errData.error || 'Error al conectar con la base de datos.');
+            }
+
+            // Animación de salida y eliminar del DOM
+            div.style.transition = 'all 0.3s ease';
+            div.style.opacity = '0';
+            div.style.transform = 'translateX(-20px)';
+            setTimeout(() => div.remove(), 300);
+
+            // Si es el cliente actual de la búsqueda, ocultar resultado
+            if (currentClientData && currentClientData.rut === cliente.rut) {
+              const resultSec = document.getElementById('result-section') as HTMLDivElement;
+              resultSec.style.display = 'none';
+              currentClientData = null;
+            }
+
+          } catch (e: any) {
+            alert('Error al borrar: ' + e.message);
+            btnDelete.disabled = false;
+            btnDelete.innerHTML = '🗑️ Eliminar';
+          }
+        });
+
+        div.appendChild(info);
+        div.appendChild(btnDelete);
+        dirList.appendChild(div);
+      });
+
+    } catch (e: any) {
+      alert('Error: ' + e.message);
+    } finally {
+      btnLoadDir.disabled = false;
+      btnLoadText.hidden = false;
+      btnLoadLoading.hidden = true;
+    }
+  });
+
+  // Lógica de Campañas de Marketing (Spam)
+  const btnSendMarketing = document.getElementById('btn-send-marketing') as HTMLButtonElement;
+  const btnMarketingText = document.getElementById('btn-marketing-text') as HTMLSpanElement;
+  const btnMarketingLoading = document.getElementById('btn-marketing-loading') as HTMLSpanElement;
+  const marketingSuccess = document.getElementById('marketing-success') as HTMLParagraphElement;
+  const marketingTitle = document.getElementById('marketing-title') as HTMLInputElement;
+  const marketingBody = document.getElementById('marketing-body') as HTMLTextAreaElement;
+
+  btnSendMarketing?.addEventListener('click', async () => {
+    const title = marketingTitle.value.trim();
+    const body = marketingBody.value.trim();
+
+    if (!title || !body) {
+      alert('Por favor, ingresa un título y un cuerpo para la notificación.');
+      return;
+    }
+
+    if (!confirm('¿Estás seguro que deseas enviar esta notificación push a todos los clientes del local?')) return;
+
+    btnSendMarketing.disabled = true;
+    btnMarketingText.hidden = true;
+    btnMarketingLoading.hidden = false;
+    marketingSuccess.style.display = 'none';
+
+    try {
+      const enteredPin = sessionStorage.getItem('barberPin') || '';
+      const res = await fetch('/api/admin/send-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          title, 
+          body,
+          pin: enteredPin 
+        })
+      });
+
+      const resData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(resData.error || 'Error al enviar la campaña.');
+      }
+
+      // Éxito
+      marketingSuccess.style.display = 'block';
+      marketingTitle.value = '';
+      marketingBody.value = '';
+      setTimeout(() => {
+        marketingSuccess.style.display = 'none';
+      }, 5000);
+
+    } catch (e: any) {
+      alert('Error al enviar la campaña: ' + e.message);
+    } finally {
+      btnSendMarketing.disabled = false;
+      btnMarketingText.hidden = false;
+      btnMarketingLoading.hidden = true;
+    }
+  });
+
+  // Lógica de Ciclos de Notificaciones
+  const btnSaveCycle = document.getElementById('btn-save-cycle') as HTMLButtonElement;
+  const btnCycleText = document.getElementById('btn-cycle-text') as HTMLSpanElement;
+  const btnCycleLoading = document.getElementById('btn-cycle-loading') as HTMLSpanElement;
+  const cycleSuccess = document.getElementById('cycle-success') as HTMLParagraphElement;
+  const cycleTitle = document.getElementById('cycle-title') as HTMLInputElement;
+  const cycleBody = document.getElementById('cycle-body') as HTMLTextAreaElement;
+  const cycleFreq = document.getElementById('cycle-freq') as HTMLSelectElement;
+  const cycleActive = document.getElementById('cycle-active') as HTMLInputElement;
+
+  btnSaveCycle?.addEventListener('click', async () => {
+    const title = cycleTitle.value.trim();
+    const body = cycleBody.value.trim();
+    const freq = parseInt(cycleFreq.value, 10);
+    const active = cycleActive.checked;
+
+    if (!title || !body) {
+      alert('Por favor, ingresa un título y un cuerpo para el ciclo.');
+      return;
+    }
+
+    btnSaveCycle.disabled = true;
+    btnCycleText.hidden = true;
+    btnCycleLoading.hidden = false;
+    cycleSuccess.style.display = 'none';
+
+    try {
+      const enteredPin = sessionStorage.getItem('barberPin') || '';
+      const res = await fetch('/api/admin/save-cycle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          title, 
+          body,
+          freq,
+          active,
+          pin: enteredPin 
+        })
+      });
+
+      const resData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(resData.error || 'Error al guardar el ciclo.');
+      }
+
+      cycleSuccess.style.display = 'block';
+      setTimeout(() => {
+        cycleSuccess.style.display = 'none';
+      }, 5000);
+
+    } catch (e: any) {
+      alert('Error al guardar: ' + e.message);
+    } finally {
+      btnSaveCycle.disabled = false;
+      btnCycleText.hidden = false;
+      btnCycleLoading.hidden = true;
+    }
+  });
+</script>
+
+<style>
+  .page-admin {
+    min-height: 100dvh;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+
+  .admin-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .admin-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+  }
+
+  .admin-panel {
+    padding: 2rem;
+    margin-bottom: 1rem;
+  }
+</style>

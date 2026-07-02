@@ -1,0 +1,956 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Leer parámetros estáticos iniciales como fallback
+const { searchParams } = Astro.url;
+const nombreFallback = searchParams.get('nombre') || '';
+const esNuevo = searchParams.get('nuevo') !== 'false';
+const usaWallet = searchParams.get('wallet') === 'true';
+---
+
+<Base
+  title="Tu Tarjeta | Molina's"
+  description="Revisa tu progreso en el Club Molina's."
+  showDeviceFrame={true}
+>
+  <main class="page-welcome">
+    <div class="wrap" style="padding-top: 4rem;">
+
+      <!-- Icono de éxito festivo -->
+      <div class="hero-icon-wrapper anim">
+        <div class="hero-icon anim-pop d1">✨</div>
+      </div>
+
+      <!-- Mensaje principal -->
+      <section class="hero-text anim d2">
+        <h1 class="display" style="font-size: clamp(2rem, 8vw, 3.5rem); line-height: 1.1;">
+          {esNuevo ? '¡Ya estás dentro,' : '¡Qué bueno verte,'} <br/>
+          <span class="display-italic" id="user-name">{nombreFallback || 'Amigo'}</span>!
+        </h1>
+
+        <p class="hero-subtitle" id="user-subtitle">
+          {esNuevo
+            ? 'Tu primer corte ya está asegurado en nuestro sistema. ¡Empezaste con todo!'
+            : 'Tu cuenta ya estaba registrada. Cargando tu progreso actual...'}
+        </p>
+      </section>
+
+
+
+
+      <!-- Acción según flujo -->
+      <section class="next-action anim d4">
+
+        <!-- Banner de Geoubicación del Local -->
+        <div id="geo-banner" class="glass-panel anim" style="margin-bottom: 1.5rem; display: none; border: 1px solid rgba(255, 215, 0, 0.15); padding: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; text-align: left;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span style="font-size: 1.7rem;" id="geo-icon">📍</span>
+              <div>
+                <h3 id="geo-title" style="font-size: 0.95rem; font-weight: 700; color: var(--text);">Calculando tu distancia...</h3>
+                <p id="geo-desc" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; line-height: 1.4;"></p>
+              </div>
+            </div>
+            <a id="geo-map-btn" href="https://maps.google.com/?q=Maestranza+1703,+San+Antonio,+Chile" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.8rem; width: auto; flex-shrink: 0; display: none;">
+              🗺️ Ver Mapa
+            </a>
+          </div>
+        </div>
+
+        <!-- Banner de Notificaciones Push Inteligente (iOS/Android) -->
+        <div id="push-consent-banner" class="glass-panel anim" style="margin-bottom: 1.5rem; display: none; border: 1px solid rgba(255, 215, 0, 0.15); padding: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; text-align: left;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span style="font-size: 1.7rem;">🔔</span>
+              <div>
+                <h3 id="push-title" style="font-size: 0.95rem; font-weight: 700; color: var(--text);">Activar Notificaciones</h3>
+                <p id="push-desc" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; line-height: 1.4;">Entérate al instante cuando sumes visitas y obtengas tu premio.</p>
+              </div>
+            </div>
+            <button id="btn-request-push" class="btn btn-gold" style="padding: 0.5rem 1rem; font-size: 0.8rem; width: auto; flex-shrink: 0;">
+              Activar
+            </button>
+          </div>
+        </div>
+
+        <!-- Smart Install Banner -->
+        <div class="premium-card glass-panel" id="install-banner" style="display: none; margin-bottom: 1.5rem;">
+          <h2 class="display" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text);">Guarda tu Tarjeta</h2>
+          <p class="action-desc" id="install-desc">
+            Instala esta página como App para tener tu QR siempre a mano.
+          </p>
+
+          <!-- Botón Android / Pop-up -->
+          <div id="android-install-ui" style="display: none; margin-top: 1.5rem;">
+            <button id="btn-install" class="btn btn-gold btn-full wallet-btn">
+              Instalar App Ahora
+            </button>
+          </div>
+
+          <!-- Instrucción iOS -->
+          <div id="ios-install-ui" style="display: none; margin-top: 1.5rem; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--r-md); text-align: center;">
+            <p style="font-size: 0.9rem; color: var(--text); margin-bottom: 0.5rem;">Para instalar en iPhone:</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              1. Toca el botón <strong>Compartir</strong> <svg style="display:inline; vertical-align:middle; margin-inline: 4px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> abajo en tu navegador. <br/>
+              2. Selecciona <strong>Añadir a inicio</strong> <svg style="display:inline; vertical-align:middle; margin-inline: 4px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>.
+            </p>
+          </div>
+        </div>
+
+        <!-- QR de Socio -->
+        <div class="qr-section glass-panel" style="margin-bottom: 1.5rem;">
+          <div class="qr-header">
+            <span class="qr-badge">✦ TU PASE VIP</span>
+            <h2 style="font-family: var(--serif); font-size: 1.4rem; color: var(--text); margin-top: 0.5rem;">
+              Muestra este QR al llegar
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.5;">
+              La recepcionista lo escaneará y tu corte se sumará automáticamente.
+            </p>
+          </div>
+
+          <div class="qr-canvas-wrap">
+            <div id="qr-code" class="qr-canvas"></div>
+            <div class="qr-glow" aria-hidden="true"></div>
+          </div>
+
+          <p class="qr-rut-label mono" id="qr-rut-display">RUT: ---</p>
+          <p class="qr-barbero-label" id="qr-barbero-display" style="margin-top: 0.5rem; color: var(--gold); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.05em; display: none;">💈 Profesional: Cargando...</p>
+        </div>
+
+        <!-- Tarjeta VIP Premium (3D Flip + Float) -->
+        <div class="card-3d-wrap" id="card-3d-bienvenido" style="margin-top: 2rem; margin-bottom: 2rem;">
+          <div class="vip-card glass-panel">
+            
+            <!-- Destello animado -->
+            <div class="card-glow" aria-hidden="true"></div>
+            <!-- Borde dorado sutil animado -->
+            <div class="vip-shimmer" aria-hidden="true"></div>
+
+            <div class="vip-card-inner">
+              <!-- Header de la tarjeta -->
+              <div class="vip-top">
+                <div>
+                  <span class="vip-brand">Loyalty Club</span>
+                  <span class="vip-member-tag">✦ MIEMBRO VIP</span>
+                </div>
+                <span class="vip-count mono" id="card-count">0/5</span>
+              </div>
+
+              <!-- Estampas visuales de progreso -->
+              <div class="vip-stamps" id="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="5" aria-label="Progreso de cortes">
+                <div class="vip-stamp progress-node">
+                  <span class="vip-stamp-icon">✂️</span>
+                </div>
+                <div class="vip-stamp progress-node">
+                  <span class="vip-stamp-icon">✂️</span>
+                </div>
+                <div class="vip-stamp progress-node">
+                  <span class="vip-stamp-icon">✂️</span>
+                </div>
+                <div class="vip-stamp progress-node">
+                  <span class="vip-stamp-icon">✂️</span>
+                </div>
+                <div class="vip-stamp vip-stamp-gift progress-node">
+                  <span class="vip-stamp-icon">🎁</span>
+                </div>
+              </div>
+
+              <!-- Mensaje de progreso -->
+              <div class="vip-bottom">
+                <p class="vip-progress-msg" id="progress-desc">
+                  Calculando visitas restantes...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer-bottom anim d5">
+        <button id="btn-logout" class="btn btn-ghost btn-full" style="margin-bottom: 2rem;">
+          🚪 Salir / Cerrar Sesión
+        </button>
+      </footer>
+
+    </div>
+
+    <!-- Guía flotante exclusiva para iOS Safari -->
+    <div id="ios-tooltip" class="glass-panel" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); max-width: 380px; z-index: 9999; border: 1px solid rgba(255, 215, 0, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(255,215,0,0.1); padding: 1.25rem; border-radius: var(--r-lg); animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <div style="position: relative; text-align: center;">
+        <button id="btn-close-ios-tooltip" style="position: absolute; top: -10px; right: -10px; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 0.5rem;" aria-label="Cerrar">✕</button>
+        <p style="font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem;">📱 Guarda esta Tarjeta en tu iPhone</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.5rem;">
+          Para recibir notificaciones y tener tu QR a mano, toca el botón de <strong>Compartir</strong> <svg style="display:inline; vertical-align:middle; margin-inline: 2px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> abajo en tu navegador y selecciona <strong>Añadir a inicio</strong>.
+        </p>
+        <!-- Flechas animadas apuntando abajo (al botón de compartir de Safari) -->
+        <div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid rgba(255, 215, 0, 0.35); position: absolute; bottom: -31px; left: 50%; transform: translateX(-50%); animation: point-down 1.5s ease-in-out infinite;"></div>
+        <div style="width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 9px solid #14120e; position: absolute; bottom: -29px; left: 50%; transform: translateX(-50%);"></div>
+      </div>
+    </div>
+
+  </main>
+</Base>
+
+<script>
+  // Script para cargar dinámicamente los datos si viene un RUT
+  async function loadUserData() {
+    const params = new URLSearchParams(window.location.search);
+    const rut = params.get('rut');
+    const esNuevo = params.get('nuevo') !== 'false';
+    const nombreFallback = params.get('nombre') || '';
+
+    let cortes = esNuevo ? 1 : 0;
+    let nombre = nombreFallback;
+    let barberoName = '';
+
+    // Si viene un RUT, consultamos a Supabase para obtener la realidad
+    if (rut) {
+      try {
+        const cleanRut = rut.replace(/[^0-9kK]/gi, '').toUpperCase();
+        const res = await fetch(`/api/clientes/get-info?rut=${cleanRut}`);
+        
+        if (res.ok) {
+          const clientData = await res.json();
+          nombre = clientData.nombre;
+          cortes = clientData.cortes;
+          barberoName = clientData.barbero || clientData.Barbero || clientData.BARBERO || 'Sin asignar';
+          localStorage.setItem('userRut', cleanRut);
+          // Si es nuevo, tal vez la BD dice 0 (recién creado), pero asumimos 1er corte
+          if (esNuevo && cortes === 0) cortes = 1;
+        }
+      } catch (e) {
+        console.error("Error cargando progreso:", e);
+      }
+    }
+
+    // Actualizar UI
+    const elName = document.getElementById('user-name');
+    const elSub = document.getElementById('user-subtitle');
+    const elCardCount = document.getElementById('card-count');
+    const elProgressTrack = document.getElementById('progress-track');
+    const elProgressDesc = document.getElementById('progress-desc');
+    const elWpName = document.getElementById('wp-name');
+    const elWpCount = document.getElementById('wp-count');
+
+    // Nombre
+    if (elName && nombre) elName.textContent = nombre;
+    if (elWpName && nombre) elWpName.textContent = nombre;
+
+    // Conteo y lógica de progreso
+    const MAX_CORTES = 5;
+    const actuales = Math.min(cortes, MAX_CORTES); // Tope visual en 5
+    const faltan = MAX_CORTES - actuales;
+
+    if (elCardCount) elCardCount.textContent = `${actuales}/${MAX_CORTES}`;
+    if (elWpCount) elWpCount.textContent = `${actuales}/${MAX_CORTES} visitas`;
+
+    if (elSub && !esNuevo) {
+      elSub.textContent = 'Aquí tienes el resumen actualizado de tu tarjeta de lealtad.';
+    }
+
+    if (elProgressDesc) {
+      if (faltan === 0) {
+        elProgressDesc.innerHTML = `<strong style="color: var(--success); font-weight: 700;">¡Felicidades!</strong> Tu próximo corte es GRATIS 🎁`;
+      } else if (faltan === 1) {
+        elProgressDesc.innerHTML = `Solo te falta <strong style="color: var(--gold); font-weight: 700;">1 visita</strong> para tu corte gratis.`;
+      } else {
+        elProgressDesc.innerHTML = `Te faltan <strong style="color: var(--gold); font-weight: 700;">${faltan} visitas</strong> para tu corte gratis.`;
+      }
+    }
+
+    // Nodos de progreso
+    if (elProgressTrack) {
+      const nodes = elProgressTrack.querySelectorAll('.progress-node');
+      nodes.forEach((node, index) => {
+        if (index < actuales) {
+          node.classList.add('filled');
+          node.classList.add('anim-pop'); // Animación al llenarse
+        } else {
+          node.classList.remove('filled');
+        }
+      });
+    }
+
+    // ═══ GENERAR QR ÚNICO DEL SOCIO ═══
+    if (rut) {
+      const cleanRut = rut.replace(/[^0-9kK]/gi, '').toUpperCase();
+      const qrContainer = document.getElementById('qr-code');
+      const qrRutDisplay = document.getElementById('qr-rut-display');
+      
+      if (qrContainer) {
+        // Generamos la imagen del QR de forma instantánea usando un servicio externo
+        // Codifica una URL que lleva directo al escáner con el RUT
+        const qrUrl = `${window.location.origin}/escaner?rut=${cleanRut}`;
+        const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&color=1a1814&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}`;
+        
+        const qrImg = document.createElement('img');
+        qrImg.src = apiUrl;
+        qrImg.alt = "Código QR de Socio";
+        qrImg.style.width = "220px";
+        qrImg.style.height = "220px";
+        qrImg.style.borderRadius = "16px";
+        
+        qrContainer.innerHTML = ''; // Limpiar
+        qrContainer.appendChild(qrImg);
+      }
+      
+      
+      if (qrRutDisplay) {
+        // Formatear RUT para mostrar
+        const body = cleanRut.slice(0, -1);
+        const dv = cleanRut.slice(-1);
+        const formatted = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + dv;
+        qrRutDisplay.textContent = `RUT: ${formatted}`;
+      }
+
+      const qrBarberoDisplay = document.getElementById('qr-barbero-display');
+      if (qrBarberoDisplay && barberoName) {
+        qrBarberoDisplay.style.display = 'block';
+        qrBarberoDisplay.textContent = `💈 Profesional: ${barberoName}`;
+      }
+    }
+
+    initPWA();
+    
+    // Identificar al usuario en OneSignal usando su RUT
+    if (rut && window.OneSignalDeferred) {
+      window.OneSignalDeferred.push(async function(OneSignal) {
+        const cleanRut = rut.replace(/[^0-9kK]/gi, '').toUpperCase();
+        await OneSignal.login(cleanRut);
+      });
+    }
+
+    initPushBanner();
+    initGeolocation();
+  }
+
+  // Lógica de Instalación PWA Híbrida
+  let deferredPrompt: any = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Evitar que Chrome muestre el prompt inmediatamente
+    e.preventDefault();
+    // Guardar el evento para dispararlo luego
+    deferredPrompt = e;
+    
+    // Como estamos en Android/Desktop soportado, mostramos nuestro banner
+    mostrarBannerAndroid();
+  });
+
+  function initPWA() {
+    // Si ya está instalada (Standalone), no mostramos nada
+    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
+      return;
+    }
+
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    
+    if (isIOS) {
+      mostrarBannerIOS();
+      mostrarTooltipIOS();
+    } else {
+      // En Android esperamos al evento beforeinstallprompt, 
+      // pero si pasó rápido, lo mostramos igual por si acaso.
+      // (Dependemos del eventListener arriba principalmente)
+    }
+  }
+
+  function mostrarBannerAndroid() {
+    const banner = document.getElementById('install-banner');
+    const androidUI = document.getElementById('android-install-ui');
+    const btn = document.getElementById('btn-install');
+    
+    if (banner && androidUI && btn) {
+      banner.style.display = 'block';
+      androidUI.style.display = 'block';
+      
+      btn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            banner.style.display = 'none';
+          }
+          deferredPrompt = null;
+        }
+      });
+    }
+  }
+
+  function mostrarBannerIOS() {
+    const banner = document.getElementById('install-banner');
+    const iosUI = document.getElementById('ios-install-ui');
+    
+    if (banner && iosUI) {
+      banner.style.display = 'block';
+      iosUI.style.display = 'block';
+    }
+  }
+
+  function mostrarTooltipIOS() {
+    // No mostrar si ya fue cerrada
+    if (localStorage.getItem('ios-tooltip-dismissed') === 'true') {
+      return;
+    }
+
+    const tooltip = document.getElementById('ios-tooltip');
+    const closeBtn = document.getElementById('btn-close-ios-tooltip');
+
+    if (!tooltip || !closeBtn) return;
+
+    tooltip.style.display = 'block';
+    closeBtn.addEventListener('click', () => {
+      tooltip.style.display = 'none';
+      localStorage.setItem('ios-tooltip-dismissed', 'true');
+    });
+  }
+
+  // Geoubicación del Local y Cálculo de Distancia
+  const SHOP_LAT = -33.5952064;
+  const SHOP_LON = -71.6102932;
+
+  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const R = 6371e3; // Radio de la Tierra en metros
+    const phi1 = lat1 * Math.PI/180;
+    const phi2 = lat2 * Math.PI/180;
+    const deltaPhi = (lat2-lat1) * Math.PI/180;
+    const deltaLambda = (lon2-lon1) * Math.PI/180;
+
+    const a = Math.sin(deltaPhi/2) * Math.sin(deltaPhi/2) +
+              Math.cos(phi1) * Math.cos(phi2) *
+              Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c; // en metros
+  }
+
+  function initGeolocation() {
+    if (!navigator.geolocation) return;
+
+    const geoBanner = document.getElementById('geo-banner');
+    const geoTitle = document.getElementById('geo-title');
+    const geoDesc = document.getElementById('geo-desc');
+    const geoIcon = document.getElementById('geo-icon');
+    const geoMapBtn = document.getElementById('geo-map-btn');
+
+    if (!geoBanner || !geoTitle || !geoDesc || !geoIcon || !geoMapBtn) return;
+
+    // Mostrar el contenedor
+    geoBanner.style.display = 'block';
+
+    let simulatedNear = false;
+    let lastPosition: any = null;
+
+    function renderUI(lat: number, lon: number) {
+      let distance = calculateDistance(lat, lon, SHOP_LAT, SHOP_LON);
+
+      if (simulatedNear) {
+        distance = 12; // Forzar a 12 metros (dentro del local)
+      }
+
+      geoMapBtn.style.display = 'block';
+
+      if (distance < 150) {
+        geoTitle.textContent = "📍 ¡Estás en la barbería!";
+        geoDesc.innerHTML = `Estás a sólo <strong>${Math.round(distance)} metros</strong> de Molina's. ¡Pasa a elevar tu estilo!`;
+        geoIcon.textContent = "🔥";
+        geoBanner.style.borderColor = "var(--success)";
+        geoBanner.style.boxShadow = "0 0 15px rgba(46, 204, 113, 0.2)";
+      } else {
+        geoIcon.textContent = "📍";
+        geoBanner.style.borderColor = "rgba(255, 215, 0, 0.15)";
+        geoBanner.style.boxShadow = "none";
+        if (distance < 1000) {
+          geoTitle.textContent = `📍 A ${Math.round(distance)} metros de Molina's`;
+          geoDesc.textContent = "Estás muy cerca. ¡Pasa a visitarnos!";
+        } else {
+          const km = (distance / 1000).toFixed(1);
+          geoTitle.textContent = `📍 A ${km} km de Molina's`;
+          geoDesc.textContent = "Maestranza 1703, San Antonio, Chile";
+        }
+      }
+    }
+
+    navigator.geolocation.watchPosition((position) => {
+      lastPosition = position;
+      renderUI(position.coords.latitude, position.coords.longitude);
+    }, (error) => {
+      console.warn("Geolocation watchPosition error:", error);
+      if (simulatedNear) {
+        renderUI(SHOP_LAT, SHOP_LON);
+      } else {
+        geoTitle.textContent = "📍 Molina's Barbería Premium";
+        geoDesc.textContent = "Maestranza 1703, San Antonio, Chile";
+        geoMapBtn.style.display = 'block';
+      }
+    }, {
+      enableHighAccuracy: true
+    });
+
+    // Truco de Desarrollador: Haz clic 5 veces seguidas en el banner de geoubicación para simular cercanía
+    let clickCount = 0;
+    geoBanner.addEventListener('click', () => {
+      clickCount++;
+      if (clickCount >= 5) {
+        simulatedNear = !simulatedNear;
+        clickCount = 0;
+        alert(simulatedNear 
+          ? "🔔 [Modo Simulación] Ahora simulas estar DENTRO de la barbería." 
+          : "🔔 [Modo Simulación] Volviendo a usar tu ubicación GPS real."
+        );
+        if (lastPosition) {
+          renderUI(lastPosition.coords.latitude, lastPosition.coords.longitude);
+        } else {
+          renderUI(SHOP_LAT, SHOP_LON);
+        }
+      }
+    });
+  }
+
+  // Invitación Inteligente a Notificaciones Push
+  function initPushBanner() {
+    const banner = document.getElementById('push-consent-banner');
+    const pushTitle = document.getElementById('push-title');
+    const pushDesc = document.getElementById('push-desc');
+    const btn = document.getElementById('btn-request-push');
+    
+    if (!banner || !pushTitle || !pushDesc || !btn) return;
+
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+
+    // Si estamos en un entorno HTTP inseguro (desarrollo local en red móvil), OneSignal no funcionará.
+    // Mostramos una vista previa visual para que puedas ver el diseño.
+    if (!window.isSecureContext && window.location.hostname !== 'localhost') {
+      banner.style.display = 'block';
+      pushTitle.textContent = "🔔 Notificaciones (Vista Previa)";
+      pushDesc.textContent = "Las notificaciones push requieren HTTPS para funcionar. Se verán así en producción.";
+      btn.textContent = "Entendido";
+      btn.addEventListener('click', () => {
+        banner.style.display = 'none';
+      });
+      return;
+    }
+
+    if (window.OneSignalDeferred) {
+      window.OneSignalDeferred.push(async function(OneSignal) {
+        // Ocultar si ya está otorgado el permiso
+        if (OneSignal.Notifications.permission === 'granted') {
+          return;
+        }
+
+        banner.style.display = 'block';
+
+        if (isIOS && !isStandalone) {
+          pushTitle.textContent = "Activar en iPhone 📲";
+          pushDesc.textContent = "Apple requiere guardar esta tarjeta como App primero. Toca el botón Compartir y 'Añadir a inicio'.";
+          btn.textContent = "Instrucciones";
+          btn.addEventListener('click', () => {
+            document.getElementById('install-banner')?.scrollIntoView({ behavior: 'smooth' });
+          });
+        } else {
+          btn.addEventListener('click', async () => {
+            try {
+              await OneSignal.Notifications.requestPermission();
+              if (OneSignal.Notifications.permission === 'granted') {
+                banner.style.display = 'none';
+              }
+            } catch (e) {
+              console.error("Push registration error:", e);
+            }
+          });
+        }
+      });
+    }
+  }
+
+
+  // Ejecutar al cargar
+  document.addEventListener('DOMContentLoaded', loadUserData);
+
+  // ═══ TARJETA 3D: Giro al aparecer + Float + Loop ═══
+  function initCard3D(wrapperId) {
+    const wrap = document.getElementById(wrapperId);
+    if (!wrap) return;
+
+    function doSpin() {
+      wrap.classList.remove('is-floating');
+      wrap.classList.add('is-spinning');
+      setTimeout(() => {
+        wrap.classList.remove('is-spinning');
+        wrap.classList.add('is-floating');
+      }, 850);
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          doSpin();
+          setInterval(doSpin, 5000);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    observer.observe(wrap);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initCard3D('card-3d-bienvenido');
+
+    // Cerrar Sesión / Salir de la Tarjeta
+    const btnLogout = document.getElementById('btn-logout');
+    btnLogout?.addEventListener('click', () => {
+      localStorage.removeItem('userRut');
+      window.location.href = '/';
+    });
+  });
+</script>
+
+<style is:global>
+  @keyframes bounce-in {
+    0% { opacity: 0; transform: translate(-50%, 50px) scale(0.9); }
+    100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  }
+  @keyframes point-down {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, 6px); }
+  }
+
+  .page-welcome {
+    min-height: 100dvh;
+    padding-bottom: 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Hero & Icon */
+  .hero-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .hero-icon {
+    font-size: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+    border-radius: var(--r-full);
+    box-shadow: 0 10px 30px var(--gold-glow), inset 0 2px 5px rgba(255,255,255,0.5);
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+
+  .hero-text {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  .hero-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    max-width: 360px;
+    margin-inline: auto;
+    line-height: 1.6;
+  }
+
+  /* ═══ VIP Card Premium ═══ */
+  .vip-card {
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    background: linear-gradient(145deg, rgba(30, 28, 22, 0.7), rgba(20, 18, 14, 0.9));
+    margin-bottom: 2rem;
+  }
+
+  .vip-shimmer {
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255,215,0,0) 0%,
+      rgba(255,215,0,0.03) 40%,
+      rgba(255,215,0,0.12) 50%,
+      rgba(255,215,0,0.03) 60%,
+      rgba(255,215,0,0) 100%
+    );
+    transform: rotate(30deg) translateY(-100%);
+    animation: vip-shine 6s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes vip-shine {
+    0% { transform: rotate(30deg) translateY(-100%); }
+    30%, 100% { transform: rotate(30deg) translateY(100%); }
+  }
+
+  .card-glow {
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 200px; height: 200px;
+    background: var(--gold);
+    filter: blur(100px);
+    opacity: 0.2;
+    pointer-events: none;
+    border-radius: 50%;
+    z-index: 0;
+  }
+
+  .vip-card-inner {
+    position: relative;
+    z-index: 1;
+    padding: 2rem;
+  }
+
+  .vip-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .vip-brand {
+    display: block;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+
+  .vip-member-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    background: var(--gold-subtle);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--r-full);
+    margin-top: 0.4rem;
+  }
+
+  .vip-count {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--gold);
+    text-shadow: 0 0 25px var(--gold-glow);
+    line-height: 1;
+  }
+
+  /* Estampas VIP */
+  .vip-stamps {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+
+  .vip-stamp {
+    flex: 1;
+    aspect-ratio: 1;
+    max-width: 58px;
+    border-radius: var(--r-md);
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.4);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .vip-stamp-icon {
+    font-size: 1.1rem;
+    opacity: 0.25;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: grayscale(1);
+  }
+
+  /* Estampa activa (llena) */
+  .vip-stamp.filled {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+    border: none;
+    box-shadow: 0 4px 20px var(--gold-glow), inset 0 2px 4px rgba(255,255,255,0.4);
+    transform: scale(1.05);
+  }
+  .vip-stamp.filled .vip-stamp-icon {
+    opacity: 1;
+    filter: grayscale(0) drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  }
+
+  /* Último (regalo) */
+  .vip-stamp-gift {
+    border: 1.5px dashed rgba(255,215,0,0.25);
+    background: rgba(255,215,0,0.03);
+  }
+  .vip-stamp-gift .vip-stamp-icon {
+    font-size: 1.3rem;
+    opacity: 0.5;
+    filter: none;
+  }
+  .vip-stamp-gift.filled {
+    border-style: solid;
+    border-color: var(--gold);
+    animation: pop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .vip-stamp-gift.filled .vip-stamp-icon {
+    opacity: 1;
+    animation: float 2s ease-in-out infinite;
+  }
+
+  /* Bottom */
+  .vip-bottom {
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .vip-progress-msg {
+    font-size: 0.95rem;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .action-desc {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .action-note {
+    font-size: 0.8rem;
+    color: var(--text-subtle);
+    text-align: center;
+    margin-top: 1rem;
+    line-height: 1.4;
+  }
+
+  /* Notificación estilo Widget iOS/Modern App */
+  .wp-widget {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--r-lg);
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1;
+    backdrop-filter: blur(10px);
+  }
+
+  .wp-widget-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .wp-icon {
+    font-size: 1rem;
+  }
+
+  .wp-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  .wp-time {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-subtle);
+  }
+
+  .wp-widget-body {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .wp-widget-body strong {
+    color: var(--text);
+  }
+
+  /* Footer */
+  .footer-bottom {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 2rem;
+    margin-top: 1rem;
+  }
+
+  /* ═══ QR Section ═══ */
+  .qr-section {
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 215, 0, 0.1);
+  }
+
+  .qr-header {
+    margin-bottom: 2rem;
+  }
+
+  .qr-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    background: var(--gold-subtle);
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--r-full);
+  }
+
+  .qr-canvas-wrap {
+    position: relative;
+    display: inline-block;
+    padding: 1rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 40px var(--gold-glow);
+    margin-bottom: 1.5rem;
+  }
+
+  .qr-canvas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 220px;
+    min-height: 220px;
+  }
+
+  .qr-glow {
+    position: absolute;
+    inset: -20px;
+    border-radius: 30px;
+    background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
+    z-index: -1;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .qr-rut-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .premium-card {
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+</style>

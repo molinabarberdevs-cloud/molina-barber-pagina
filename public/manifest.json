@@ -1,0 +1,17 @@
+{
+  "name": "Molina's Barbería Premium",
+  "short_name": "Molina's",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D1117",
+  "theme_color": "#0D1117",
+  "description": "App de fidelización de Molina's Barbería Premium",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

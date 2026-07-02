@@ -1,0 +1,585 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base
+  title="Escáner QR | Molina's"
+  description="Escáner de QR para sumar cortes a los socios."
+>
+  <main class="page-escaner">
+    <div class="wrap">
+      <!-- Header -->
+      <header class="escaner-header anim">
+        <a href="/admin" class="btn-back" aria-label="Volver al admin">
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            width="20"
+            height="20"
+            style="margin-right: 4px;"
+          >
+            <path
+              d="M15 10H5M5 10L10 5M5 10L10 15"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+          Admin
+        </a>
+        <span class="escaner-title">📷 Escáner QR</span>
+      </header>
+
+      <!-- PIN Section -->
+      <div id="pin-section" class="glass-panel escaner-panel anim-pop d1">
+        <div class="escaner-pin-icon">🔒</div>
+        <h2
+          style="font-size: 1.3rem; color: var(--text); margin-bottom: 0.5rem;"
+        >
+          Acceso Recepción
+        </h2>
+        <p
+          style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;"
+        >
+          Ingresa el PIN para activar el escáner.
+        </p>
+        <div class="field">
+          <input
+            id="input-pin"
+            type="password"
+            class="input mono"
+            placeholder="****"
+            inputmode="numeric"
+            maxlength="4"
+            style="text-align: center; font-size: 1.5rem; letter-spacing: 0.3em;"
+          />
+        </div>
+        <p
+          id="pin-error"
+          style="display:none; color: var(--danger); font-size: 0.85rem; margin-top: 0.5rem; text-align: center;"
+        >
+          PIN incorrecto
+        </p>
+        <button
+          id="btn-pin"
+          class="btn btn-gold btn-full"
+          style="margin-top: 1.5rem;">Activar Escáner</button
+        >
+      </div>
+
+      <!-- Scanner Section (oculto hasta PIN) -->
+      <div id="scanner-section" style="display: none;">
+        <!-- Cámara -->
+        <div class="scanner-cam-wrap glass-panel anim-pop">
+          <div id="reader" class="scanner-viewport"></div>
+          <p class="scanner-hint">Apunta la cámara al QR del socio</p>
+        </div>
+
+        <!-- Resultado (oculto hasta escanear) -->
+        <div
+          id="result-section"
+          class="glass-panel escaner-panel"
+          style="display: none; border-color: var(--gold);"
+        >
+          <div class="result-header">
+            <span class="result-badge">✦ SOCIO ENCONTRADO</span>
+            <div style="margin-top: 1rem;">
+              <span
+                id="client-barbero"
+                style="display:inline-block; padding: 0.4rem 1rem; background: var(--gold); color: var(--black); font-weight: 800; border-radius: var(--r-full); font-size: 0.9rem;"
+              >
+                💈 Profesional: Cargando...
+              </span>
+            </div>
+          </div>
+
+          <div class="result-info">
+            <h3
+              id="client-name"
+              class="display"
+              style="font-size: 1.8rem; margin-bottom: 0.3rem;"
+            >
+              Nombre
+            </h3>
+            <p
+              id="client-rut"
+              class="mono"
+              style="color: var(--text-muted); font-size: 0.9rem;"
+            >
+              RUT
+            </p>
+          </div>
+
+          <div class="result-cortes">
+            <p
+              style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;"
+            >
+              Cortes actuales
+            </p>
+            <p
+              id="client-cortes"
+              class="mono"
+              style="font-size: 3.5rem; color: var(--gold); font-weight: 800; line-height: 1; text-shadow: 0 0 20px var(--gold-glow);"
+            >
+              0<span style="font-size: 1.5rem; color: rgba(255,255,255,0.3);"
+                >/5</span
+              >
+            </p>
+          </div>
+
+          <button id="btn-sumar" class="btn btn-gold btn-full btn-sumar">
+            <span id="btn-sumar-text">✂️ Sumar Corte</span>
+            <span id="btn-sumar-loading" hidden>Guardando...</span>
+          </button>
+
+          <div id="success-msg" class="success-banner" style="display: none;">
+            <span class="success-icon">✅</span>
+            <span>¡Corte sumado exitosamente!</span>
+          </div>
+
+          <button
+            id="btn-otro"
+            class="btn btn-ghost btn-full"
+            style="margin-top: 0.75rem; display: none;"
+          >
+            Escanear otro socio
+          </button>
+        </div>
+
+        <!-- Modo manual (si QR no funciona) -->
+        <div
+          id="manual-section"
+          class="glass-panel escaner-panel"
+          style="margin-top: 1rem;"
+        >
+          <p
+            style="font-size: 0.8rem; color: var(--text-subtle); text-align: center; margin-bottom: 1rem;"
+          >
+            ¿No funciona la cámara? Ingresa el RUT manualmente:
+          </p>
+          <div class="field">
+            <input
+              id="input-rut-manual"
+              type="text"
+              class="input mono"
+              placeholder="12.345.678-9"
+            />
+          </div>
+          <button
+            id="btn-manual"
+            class="btn btn-ghost btn-full"
+            style="margin-top: 1rem;">Buscar por RUT</button
+          >
+        </div>
+      </div>
+    </div>
+  </main>
+</Base>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+  let currentClientData: any = null;
+  let html5QrCode: any = null;
+
+  // ═══ PIN ═══
+  const pinSec = document.getElementById("pin-section") as HTMLDivElement;
+  const scannerSec = document.getElementById(
+    "scanner-section",
+  ) as HTMLDivElement;
+  const btnPin = document.getElementById("btn-pin") as HTMLButtonElement;
+  const inputPin = document.getElementById("input-pin") as HTMLInputElement;
+  const pinError = document.getElementById("pin-error") as HTMLElement;
+
+  btnPin?.addEventListener("click", async () => {
+    const enteredPin = inputPin.value;
+    btnPin.disabled = true;
+    pinError.style.display = "none";
+
+    try {
+      const res = await fetch('/api/admin/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: enteredPin })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.valid) {
+        sessionStorage.setItem('barberPin', enteredPin);
+        pinSec.style.display = "none";
+        scannerSec.style.display = "block";
+        startScanner();
+
+        // Check if came from a QR link with rut param
+        const params = new URLSearchParams(window.location.search);
+        const rutParam = params.get("rut");
+        if (rutParam) {
+          buscarCliente(rutParam);
+        }
+      } else {
+        pinError.textContent = data.error || 'PIN incorrecto';
+        pinError.style.display = "block";
+        inputPin.value = "";
+      }
+    } catch (e) {
+      pinError.textContent = 'Error de conexión';
+      pinError.style.display = "block";
+    } finally {
+      btnPin.disabled = false;
+    }
+  });
+
+  inputPin?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") btnPin?.click();
+  });
+
+  // Auto-login si ya existe PIN verificado en sessionStorage
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedPin = sessionStorage.getItem('barberPin');
+    if (savedPin) {
+      fetch('/api/admin/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: savedPin })
+      }).then(res => res.json()).then(data => {
+        if (data.valid) {
+          pinSec.style.display = "none";
+          scannerSec.style.display = "block";
+          startScanner();
+          const params = new URLSearchParams(window.location.search);
+          const rutParam = params.get("rut");
+          if (rutParam) {
+            buscarCliente(rutParam);
+          }
+        }
+      }).catch(err => console.error('Auto PIN check failed:', err));
+    }
+  });
+
+  // ═══ ESCÁNER QR ═══
+  function startScanner() {
+    try {
+      html5QrCode = new Html5Qrcode("reader");
+      html5QrCode
+        .start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          onScanSuccess,
+          () => {}, // ignore errors
+        )
+        .catch((err: any) => {
+          console.error("Error cámara:", err);
+          document.getElementById("reader")!.innerHTML =
+            '<p style="padding: 2rem; text-align: center; color: var(--text-muted);">📷 No se pudo acceder a la cámara.<br/>Usa el campo manual abajo.</p>';
+        });
+    } catch (e) {
+      console.error("Error inicializando escáner:", e);
+    }
+  }
+
+  function onScanSuccess(decodedText: string) {
+    try {
+      const url = new URL(decodedText);
+      const rut = url.searchParams.get("rut");
+      if (rut) {
+        html5QrCode?.pause();
+        buscarCliente(rut);
+      }
+    } catch {
+      const clean = decodedText.replace(/[^0-9kK]/gi, "").toUpperCase();
+      if (clean.length >= 7) {
+        html5QrCode?.pause();
+        buscarCliente(clean);
+      }
+    }
+  }
+
+  // ═══ BUSCAR CLIENTE ═══
+  async function buscarCliente(rut: string) {
+    const cleanRut = rut.replace(/[^0-9kK]/gi, "").toUpperCase();
+    const resultSec = document.getElementById(
+      "result-section",
+    ) as HTMLDivElement;
+
+    try {
+      const res = await fetch(`/api/clientes/get-info?rut=${cleanRut}`);
+
+      if (res.status === 404) {
+        alert("Socio no encontrado en el sistema.");
+        html5QrCode?.resume();
+        return;
+      }
+
+      if (!res.ok) throw new Error("Error de red");
+
+      const data = await res.json();
+      currentClientData = data;
+
+      (document.getElementById("client-name") as HTMLElement).textContent =
+        currentClientData.nombre;
+      (document.getElementById("client-rut") as HTMLElement).textContent =
+        currentClientData.rut_formateado || cleanRut;
+      (document.getElementById("client-cortes") as HTMLElement).innerHTML =
+        `${currentClientData.cortes}<span style="font-size: 1.5rem; color: rgba(255,255,255,0.3);">/5</span>`;
+      const barberoName =
+        currentClientData.barbero ||
+        currentClientData.Barbero ||
+        currentClientData.BARBERO ||
+        "No asignado";
+      (document.getElementById("client-barbero") as HTMLElement).textContent =
+        "💈 Profesional: " + barberoName;
+
+      // Resetear estados
+      const btnSumar = document.getElementById(
+        "btn-sumar",
+      ) as HTMLButtonElement;
+      const btnSumarText = document.getElementById(
+        "btn-sumar-text",
+      ) as HTMLSpanElement;
+      const successMsg = document.getElementById(
+        "success-msg",
+      ) as HTMLDivElement;
+      const btnOtro = document.getElementById(
+        "btn-otro",
+      ) as HTMLButtonElement;
+
+      successMsg.style.display = "none";
+      btnOtro.style.display = "none";
+
+      if (currentClientData.cortes >= 5) {
+        btnSumar.disabled = true;
+        btnSumarText.textContent = "🎁 ¡Premio alcanzado!";
+      } else {
+        btnSumar.disabled = false;
+        btnSumarText.textContent = "✂️ Sumar Corte";
+      }
+
+      resultSec.style.display = "block";
+      resultSec.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (e: any) {
+      alert("Error: " + (e.message || "No se pudo conectar."));
+      html5QrCode?.resume();
+    }
+  }
+
+  // ═══ SUMAR CORTE ═══
+  const btnSumar = document.getElementById("btn-sumar") as HTMLButtonElement;
+  const btnSumarText = document.getElementById(
+    "btn-sumar-text",
+  ) as HTMLSpanElement;
+  const btnSumarLoading = document.getElementById(
+    "btn-sumar-loading",
+  ) as HTMLSpanElement;
+
+  btnSumar?.addEventListener("click", async () => {
+    if (!currentClientData) return;
+
+    btnSumar.disabled = true;
+    btnSumarText.hidden = true;
+    btnSumarLoading.hidden = false;
+
+    try {
+      const enteredPin = sessionStorage.getItem('barberPin') || '';
+      
+      const res = await fetch('/api/clientes/add-corte', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          rut: currentClientData.rut,
+          pin: enteredPin 
+        })
+      });
+
+      const resData = await res.json();
+
+      if (!res.ok) throw new Error(resData.error || "Error al guardar");
+
+      // Éxito
+      const nuevosCortes = resData.cortes;
+      currentClientData.cortes = nuevosCortes;
+      (document.getElementById("client-cortes") as HTMLElement).innerHTML =
+        `${nuevosCortes}<span style="font-size: 1.5rem; color: rgba(255,255,255,0.3);">/5</span>`;
+
+      const successMsg = document.getElementById(
+        "success-msg",
+      ) as HTMLDivElement;
+      const btnOtro = document.getElementById("btn-otro") as HTMLButtonElement;
+      successMsg.style.display = "flex";
+      btnOtro.style.display = "block";
+
+      if (nuevosCortes >= 5) {
+        btnSumarText.textContent = "🎁 ¡Premio alcanzado!";
+      } else {
+        btnSumarText.textContent = "✅ Sumado";
+      }
+
+      // Vibrar el celular (feedback táctil)
+      if (navigator.vibrate) navigator.vibrate(200);
+    } catch (e: any) {
+      alert("Error: " + e.message);
+      btnSumar.disabled = false;
+    } finally {
+      btnSumarText.hidden = false;
+      btnSumarLoading.hidden = true;
+    }
+  });
+
+  // ═══ ESCANEAR OTRO ═══
+  document.getElementById("btn-otro")?.addEventListener("click", () => {
+    const resultSec = document.getElementById(
+      "result-section",
+    ) as HTMLDivElement;
+    resultSec.style.display = "none";
+    currentClientData = null;
+    html5QrCode?.resume();
+  });
+
+  // ═══ BÚSQUEDA MANUAL ═══
+  function formatRut(value: string): string {
+    let clean = value.replace(/[^0-9kK]/g, "").toUpperCase();
+    if (clean.length === 0) return "";
+    const endsWithK = clean.endsWith("K");
+    clean = clean.replace(/K/g, "");
+    if (endsWithK) {
+      clean += "K";
+    }
+    if (clean.length < 2) return clean;
+    const body = clean.slice(0, -1);
+    const dv = clean.slice(-1);
+    return `${body.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}-${dv}`;
+  }
+
+  const inputRutManual = document.getElementById(
+    "input-rut-manual",
+  ) as HTMLInputElement;
+  inputRutManual?.addEventListener("input", () => {
+    inputRutManual.value = formatRut(inputRutManual.value);
+  });
+
+  document.getElementById("btn-manual")?.addEventListener("click", () => {
+    const rut = inputRutManual.value.replace(/[^0-9kK]/gi, "").toUpperCase();
+    if (rut.length >= 7) {
+      buscarCliente(rut);
+    }
+  });
+</script>
+
+<style>
+  .page-escaner {
+    min-height: 100dvh;
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+  }
+
+  .escaner-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1.5rem;
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    transition: color var(--ease-normal);
+  }
+  .btn-back:hover {
+    color: var(--text);
+  }
+
+  .escaner-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .escaner-panel {
+    padding: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .escaner-pin-icon {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  /* Scanner Camera */
+  .scanner-cam-wrap {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+
+  .scanner-viewport {
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    min-height: 300px;
+  }
+
+  .scanner-hint {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    font-weight: 500;
+  }
+
+  /* Result Card */
+  .result-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .result-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    background: var(--gold-subtle);
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--r-full);
+  }
+
+  .result-info {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .result-cortes {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1.5rem;
+    border-radius: var(--r-lg);
+    margin-bottom: 2rem;
+  }
+
+  .btn-sumar {
+    font-size: 1.2rem !important;
+    padding-block: 1.5rem !important;
+  }
+
+  .success-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: hsla(145, 65%, 45%, 0.15);
+    border: 1px solid var(--success);
+    color: var(--success);
+    padding: 1rem;
+    border-radius: var(--r-md);
+    margin-top: 1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .success-icon {
+    font-size: 1.3rem;
+  }
+</style>

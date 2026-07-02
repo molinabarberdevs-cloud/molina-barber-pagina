@@ -1,0 +1,274 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Ingresar | Molina's"
+  description="Accede a tu cuenta del Club Molina's."
+  showDeviceFrame={true}
+>
+  <main class="page">
+    <div class="wrap">
+
+      <!-- Header con back -->
+      <header class="page-header anim">
+        <a href="/" class="btn-back" id="btn-volver" aria-label="Volver al inicio">
+          <svg viewBox="0 0 20 20" fill="none" width="20" height="20" style="margin-right: 4px;">
+            <path d="M15 10H5M5 10L10 5M5 10L10 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Volver
+        </a>
+      </header>
+
+      <!-- Título -->
+      <section class="page-hero anim d1">
+        <h1 class="display">Bienvenido de vuelta</h1>
+        <p class="page-subtitle">
+          Ingresa tu RUT para consultar tu progreso y cortes acumulados.
+        </p>
+      </section>
+
+      <!-- Formulario de Ingreso (Sin Pantalla de Bloqueo) -->
+
+      <!-- Formulario Glassmorphism -->
+      <form
+        id="form-login"
+        class="login-form glass-panel anim-pop d2"
+        novalidate
+        autocomplete="off"
+      >
+        <!-- RUT -->
+        <div class="field">
+          <label class="label" for="input-rut">Tu RUT</label>
+          <input
+            id="input-rut"
+            name="rut"
+            type="text"
+            class="input mono"
+            placeholder="12.345.678-9"
+            autocomplete="off"
+            required
+          />
+          <span class="error-msg" id="error-rut">RUT inválido. Ej: 12.345.678-9</span>
+        </div>
+
+        <!-- Error global -->
+        <div id="form-error-global" class="form-error-global" role="alert" aria-live="assertive" hidden>
+          <span id="form-error-text"></span>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          id="btn-ingresar"
+          class="btn btn-gold btn-full"
+          style="margin-top: 2rem;"
+        >
+          <span id="btn-text">Ver mi tarjeta</span>
+          <span id="btn-loading" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            Buscando...
+          </span>
+        </button>
+
+        <p class="form-disclaimer">
+          ¿Aún no eres miembro? <a href="/registro" style="color: var(--gold); text-decoration: none; font-weight: 600;">Regístrate aquí</a>
+        </p>
+      </form>
+
+    </div>
+  </main>
+</Base>
+
+<script>
+  // ──────────────────────────────────────────────
+  // Validación de RUT chileno
+  // ──────────────────────────────────────────────
+  function formatRut(value: string): string {
+    let clean = value.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (clean.length === 0) return '';
+    const endsWithK = clean.endsWith('K');
+    clean = clean.replace(/K/g, '');
+    if (endsWithK) {
+      clean += 'K';
+    }
+    if (clean.length < 2) return clean;
+    const body = clean.slice(0, -1);
+    const dv   = clean.slice(-1);
+    const formatted = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${formatted}-${dv}`;
+  }
+
+  function validateRut(rut: string): boolean {
+    let clean = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (clean.length < 2) return false;
+    const endsWithK = clean.endsWith('K');
+    clean = clean.replace(/K/g, '');
+    if (endsWithK) {
+      clean += 'K';
+    }
+    if (clean.length < 2) return false;
+    const body = clean.slice(0, -1);
+    const dv   = clean.slice(-1);
+    if (!/^\d+$/.test(body)) return false;
+    let sum = 0;
+    let mul = 2;
+    for (let i = body.length - 1; i >= 0; i--) {
+      sum += parseInt(body[i]) * mul;
+      mul = mul === 7 ? 2 : mul + 1;
+    }
+    const expected = 11 - (sum % 11);
+    const expectedDv =
+      expected === 11 ? '0' :
+      expected === 10 ? 'K' :
+      String(expected);
+    return dv === expectedDv;
+  }
+
+  // Auto-formato RUT
+  const rutInput = document.getElementById('input-rut') as HTMLInputElement;
+  const rutError = document.getElementById('error-rut') as HTMLSpanElement;
+
+  rutInput?.addEventListener('input', () => {
+    const raw = rutInput.value;
+    const formatted = formatRut(raw);
+    rutInput.value = formatted;
+    rutInput.classList.remove('error');
+    rutError.style.display = 'none';
+  });
+
+  rutInput?.addEventListener('blur', () => {
+    if (rutInput.value && !validateRut(rutInput.value)) {
+      rutInput.classList.add('error');
+      rutError.style.display = 'block';
+    }
+  });
+
+  // ──────────────────────────────────────────────
+  // Submit del formulario
+  // ──────────────────────────────────────────────
+  const form        = document.getElementById('form-login') as HTMLFormElement;
+  const btnText     = document.getElementById('btn-text') as HTMLSpanElement;
+  const btnLoading  = document.getElementById('btn-loading') as HTMLSpanElement;
+  const btnSubmit   = document.getElementById('btn-ingresar') as HTMLButtonElement;
+  const errorGlobal = document.getElementById('form-error-global') as HTMLDivElement;
+  const errorText   = document.getElementById('form-error-text') as HTMLSpanElement;
+
+  function showError(msg: string) {
+    errorText.textContent = msg;
+    errorGlobal.hidden = false;
+  }
+
+  function setLoading(loading: boolean) {
+    btnSubmit.disabled = loading;
+    btnText.hidden   = loading;
+    btnLoading.hidden = !loading;
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorGlobal.hidden = true;
+
+    const rut = rutInput.value.trim();
+
+    if (!validateRut(rut)) {
+      showError('El RUT ingresado no es válido.');
+      rutInput.classList.add('error');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const cleanRut = rut.replace(/[^0-9kK]/gi, '').toUpperCase();
+      const response = await fetch(`/api/clientes/get-info?rut=${cleanRut}`);
+
+      if (response.status === 404) {
+        showError('No encontramos un registro con este RUT. Si es tu primera vez, por favor regístrate.');
+        setLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Error al conectar con el servidor.');
+      }
+
+      const data = await response.json();
+
+      // Usuario encontrado!
+      localStorage.setItem('userRut', cleanRut);
+      // Redirigimos a la pantalla final pasándole su RUT para que cargue los datos reales.
+      window.location.href = `/bienvenido?rut=${cleanRut}&nuevo=false`;
+
+    } catch (err: unknown) {
+      setLoading(false);
+      const msg = err instanceof Error ? err.message : 'Ocurrió un error. Intenta de nuevo.';
+      showError(msg);
+    }
+  });
+
+  // Bloqueo de PWA removido para mejorar la experiencia de usuario (onboarding sin fricciones)
+</script>
+
+<style>
+  .page {
+    padding-bottom: 4rem;
+  }
+
+  /* Header */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 3rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    transition: color var(--ease-normal);
+  }
+  .btn-back:hover { color: var(--text); }
+
+  /* Hero */
+  .page-hero {
+    padding-block: 1.5rem 2.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    max-width: 320px;
+    line-height: 1.5;
+  }
+
+  /* Formulario */
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+  }
+
+  /* Errores */
+  .form-error-global {
+    background: hsla(0, 75%, 55%, 0.15);
+    border-left: 3px solid var(--danger);
+    padding: 1rem;
+    font-size: 0.85rem;
+    color: var(--danger);
+    margin-top: 1.5rem;
+    border-radius: 0 var(--r-md) var(--r-md) 0;
+  }
+
+  .form-disclaimer {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-subtle);
+    margin-top: 1.5rem;
+  }
+</style>

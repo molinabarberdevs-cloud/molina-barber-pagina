@@ -1,0 +1,479 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Registro | Molina's"
+  description="Regístrate en el programa de fidelización de Molina's Barbería Premium."
+  showDeviceFrame={true}
+>
+  <main class="page">
+    <div class="wrap">
+
+      <!-- Header con back -->
+      <header class="page-header anim">
+        <a href="/" class="btn-back" id="btn-volver" aria-label="Volver al inicio">
+          <svg viewBox="0 0 20 20" fill="none" width="20" height="20" style="margin-right: 4px;">
+            <path d="M15 10H5M5 10L10 5M5 10L10 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Volver
+        </a>
+        <div class="header-step">Paso 1 de 1</div>
+      </header>
+
+      <!-- Título -->
+      <section class="page-hero anim d1">
+        <h1 class="display">Registro VIP</h1>
+        <p class="page-subtitle">
+          Crea tu cuenta para guardar tus cortes y acceder a beneficios.
+        </p>
+      </section>
+
+      <!-- Formulario de Registro (Sin Pantalla de Bloqueo) -->
+
+      <!-- Formulario Glassmorphism -->
+      <form
+        id="form-registro"
+        class="registro-form glass-panel anim-pop d2"
+        novalidate
+        autocomplete="off"
+      >
+        <!-- Nombre -->
+        <div class="field">
+          <label class="label" for="input-nombre">Nombre de la reserva</label>
+          <input
+            id="input-nombre"
+            name="nombre"
+            type="text"
+            class="input"
+            placeholder="Ej: Juan Molina"
+            autocomplete="given-name"
+            required
+            minlength="2"
+          />
+          <span class="error-msg">Ingresa tu nombre (mínimo 2 caracteres)</span>
+        </div>
+
+        <!-- RUT -->
+        <div class="field" style="margin-top: 1rem;">
+          <label class="label" for="input-rut">Tu RUT</label>
+          <input
+            id="input-rut"
+            name="rut"
+            type="text"
+            class="input mono"
+            placeholder="12.345.678-9"
+            autocomplete="off"
+            required
+          />
+          <span class="hint">Identificador único en nuestra base de datos</span>
+          <span class="error-msg" id="error-rut">RUT inválido. Ej: 12.345.678-9</span>
+        </div>
+
+        <!-- Profesional -->
+        <div class="field" style="margin-top: 1rem;">
+          <label class="label" for="input-barbero">¿Con quién te atendiste hoy?</label>
+          <select
+            id="input-barbero"
+            name="barbero"
+            class="input"
+            required
+            style="appearance: auto; background-color: rgba(0,0,0,0.5); color: var(--text);"
+          >
+            <option value="" disabled selected>Selecciona tu profesional...</option>
+            <option value="Jesus Molina">Jesús Molina</option>
+            <option value="Alejandro Ramirez">Alejandro Ramirez</option>
+            <option value="Hilder Sierra">Hilder Sierra</option>
+            <option value="Kevin Molina">Kevin Molina</option>
+            <option value="Diana Donoso">Diana Donoso (Manicure)</option>
+          </select>
+          <span class="error-msg">Por favor selecciona un profesional</span>
+        </div>
+
+        <!-- Teléfono WhatsApp -->
+        <div class="field" style="margin-top: 1rem;">
+          <label class="label" for="input-telefono">
+            WhatsApp <span style="text-transform:none; font-weight:normal; letter-spacing:0; color:var(--text-subtle)">(opcional pero recomendado)</span>
+          </label>
+          <div class="phone-input-wrapper">
+            <span class="phone-prefix">🇨🇱 +56</span>
+            <input
+              id="input-telefono"
+              name="telefono"
+              type="tel"
+              class="input phone-field"
+              placeholder="9 1234 5678"
+              inputmode="tel"
+              autocomplete="tel"
+              maxlength="12"
+            />
+          </div>
+          <span class="hint">Recibe notificaciones automáticas de tu progreso</span>
+        </div>
+
+        <!-- ─── Consentimiento (OBLIGATORIO si ingresa teléfono) ─── -->
+        <div class="consent-wrapper" id="consent-wrapper" aria-live="polite">
+          <label class="consent-label" for="consent-whatsapp">
+            <input
+              type="checkbox"
+              id="consent-whatsapp"
+              name="consentimiento"
+              class="consent-check"
+            />
+            <span class="consent-text">
+              <strong>Acepto recibir notificaciones</strong> vía WhatsApp sobre mi lealtad.
+              Cancelable en cualquier momento.
+            </span>
+          </label>
+        </div>
+
+        <!-- Error global -->
+        <div id="form-error-global" class="form-error-global" role="alert" aria-live="assertive" hidden>
+          <span id="form-error-text"></span>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          id="btn-registrar"
+          class="btn btn-gold btn-full"
+          style="margin-top: 1.5rem;"
+        >
+          <span id="btn-text">Unirme ahora</span>
+          <span id="btn-loading" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            Procesando...
+          </span>
+        </button>
+
+        <p class="form-disclaimer">
+          🔒 Protegido bajo la Ley 21.719 de Protección de Datos Personales.
+        </p>
+      </form>
+
+    </div>
+  </main>
+</Base>
+
+<script>
+  // ──────────────────────────────────────────────
+  // Validación de RUT chileno
+  // ──────────────────────────────────────────────
+  function formatRut(value: string): string {
+    let clean = value.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (clean.length === 0) return '';
+    const endsWithK = clean.endsWith('K');
+    clean = clean.replace(/K/g, '');
+    if (endsWithK) {
+      clean += 'K';
+    }
+    if (clean.length < 2) return clean;
+    const body = clean.slice(0, -1);
+    const dv   = clean.slice(-1);
+    const formatted = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${formatted}-${dv}`;
+  }
+
+  function validateRut(rut: string): boolean {
+    let clean = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (clean.length < 2) return false;
+    const endsWithK = clean.endsWith('K');
+    clean = clean.replace(/K/g, '');
+    if (endsWithK) {
+      clean += 'K';
+    }
+    if (clean.length < 2) return false;
+    const body = clean.slice(0, -1);
+    const dv   = clean.slice(-1);
+    if (!/^\d+$/.test(body)) return false;
+    let sum = 0;
+    let mul = 2;
+    for (let i = body.length - 1; i >= 0; i--) {
+      sum += parseInt(body[i]) * mul;
+      mul = mul === 7 ? 2 : mul + 1;
+    }
+    const expected = 11 - (sum % 11);
+    const expectedDv =
+      expected === 11 ? '0' :
+      expected === 10 ? 'K' :
+      String(expected);
+    return dv === expectedDv;
+  }
+
+  // Auto-formato RUT
+  const rutInput = document.getElementById('input-rut') as HTMLInputElement;
+  const rutError = document.getElementById('error-rut') as HTMLSpanElement;
+
+  rutInput?.addEventListener('input', () => {
+    const raw = rutInput.value;
+    const formatted = formatRut(raw);
+    rutInput.value = formatted;
+    rutInput.classList.remove('error');
+    rutError.style.display = 'none';
+  });
+
+  rutInput?.addEventListener('blur', () => {
+    if (rutInput.value && !validateRut(rutInput.value)) {
+      rutInput.classList.add('error');
+      rutError.style.display = 'block';
+    }
+  });
+
+  // ──────────────────────────────────────────────
+  // Mostrar/ocultar consentimiento al escribir teléfono
+  // ──────────────────────────────────────────────
+  const telefonoInput  = document.getElementById('input-telefono') as HTMLInputElement;
+  const consentWrapper = document.getElementById('consent-wrapper') as HTMLDivElement;
+  const consentCheck   = document.getElementById('consent-whatsapp') as HTMLInputElement;
+
+  telefonoInput?.addEventListener('input', () => {
+    const hasPhone = telefonoInput.value.trim().length > 3;
+    consentWrapper.classList.toggle('required', hasPhone);
+  });
+
+  // ──────────────────────────────────────────────
+  // Submit del formulario
+  // ──────────────────────────────────────────────
+  const form        = document.getElementById('form-registro') as HTMLFormElement;
+  const btnText     = document.getElementById('btn-text') as HTMLSpanElement;
+  const btnLoading  = document.getElementById('btn-loading') as HTMLSpanElement;
+  const btnSubmit   = document.getElementById('btn-registrar') as HTMLButtonElement;
+  const errorGlobal = document.getElementById('form-error-global') as HTMLDivElement;
+  const errorText   = document.getElementById('form-error-text') as HTMLSpanElement;
+
+  function showError(msg: string) {
+    errorText.textContent = msg;
+    errorGlobal.hidden = false;
+  }
+
+  function setLoading(loading: boolean) {
+    btnSubmit.disabled = loading;
+    btnText.hidden   = loading;
+    btnLoading.hidden = !loading;
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorGlobal.hidden = true;
+
+    const nombre    = (document.getElementById('input-nombre') as HTMLInputElement).value.trim();
+    const rut       = (document.getElementById('input-rut') as HTMLInputElement).value.trim();
+    const barbero   = (document.getElementById('input-barbero') as HTMLSelectElement).value;
+    const telefono  = telefonoInput.value.trim();
+    const consintio = consentCheck.checked;
+
+    if (nombre.length < 2) {
+      showError('Por favor ingresa tu nombre.');
+      return;
+    }
+    if (!validateRut(rut)) {
+      showError('El RUT ingresado no es válido.');
+      rutInput.classList.add('error');
+      return;
+    }
+    if (!barbero) {
+      showError('Por favor selecciona el profesional que te atendió.');
+      return;
+    }
+    if (telefono && !consintio) {
+      showError('Debes aceptar recibir mensajes de WhatsApp para continuar.');
+      consentWrapper.classList.add('pulse-error');
+      setTimeout(() => consentWrapper.classList.remove('pulse-error'), 600);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/clientes/registro', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          nombre,
+          rut,
+          barbero,
+          telefono,
+          consentimiento: consintio
+        })
+      });
+
+      const resData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(resData.error || 'Error al guardar tus datos.');
+      }
+
+      if (resData.code === '23505') {
+        const cleanRut = rut.replace(/[^0-9kK]/gi, '').toUpperCase();
+        localStorage.setItem('userRut', cleanRut);
+        window.location.href = `/bienvenido?rut=${encodeURIComponent(cleanRut)}&nuevo=false`;
+        return;
+      }
+
+      const cleanRut = rut.replace(/[^0-9kK]/gi, '').toUpperCase();
+      localStorage.setItem('userRut', cleanRut);
+      window.location.href = `/bienvenido?rut=${encodeURIComponent(cleanRut)}&nombre=${encodeURIComponent(nombre)}&wallet=${!telefono}`;
+
+    } catch (err: unknown) {
+      setLoading(false);
+      const msg = err instanceof Error ? err.message : 'Ocurrió un error. Intenta de nuevo.';
+      showError(msg);
+    }
+  });
+
+  // Cargar barberos dinámicamente desde la API (con fallback estático)
+  document.addEventListener('DOMContentLoaded', async () => {
+    const selectBarbero = document.getElementById('input-barbero') as HTMLSelectElement;
+    if (selectBarbero) {
+      try {
+        const res = await fetch('/api/barberos');
+        if (res.ok) {
+          const barberos = await res.json();
+          if (barberos && barberos.length > 0) {
+            selectBarbero.innerHTML = '<option value="" disabled selected>Selecciona tu profesional...</option>';
+            barberos.forEach((b: any) => {
+              const opt = document.createElement('option');
+              opt.value = b.nombre;
+              opt.textContent = b.nombre;
+              selectBarbero.appendChild(opt);
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error cargando barberos:', err);
+      }
+    }
+  });
+</script>
+
+<style>
+  .page {
+    padding-bottom: 4rem;
+  }
+
+  /* Header */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 3rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    transition: color var(--ease-normal);
+  }
+  .btn-back:hover { color: var(--text); }
+
+  .header-step {
+    font-size: 0.75rem;
+    color: var(--text-subtle);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Hero */
+  .page-hero {
+    padding-block: 1.5rem 2.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    max-width: 320px;
+    line-height: 1.5;
+  }
+
+  /* Formulario */
+  .registro-form {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+  }
+
+  /* Phone input */
+  .phone-input-wrapper {
+    display: flex;
+    align-items: stretch;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    transition: border-color var(--ease-normal), box-shadow var(--ease-normal);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .phone-input-wrapper:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-glow), inset 0 2px 4px rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.4);
+  }
+
+  .phone-prefix {
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.875rem 1rem;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+  }
+
+  .phone-field {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    flex: 1;
+    background: transparent;
+  }
+
+  /* Consentimiento Oculto por defecto */
+  .consent-wrapper {
+    display: none;
+    margin-top: 1rem;
+  }
+  .consent-wrapper.required {
+    display: block;
+    animation: fade-up 0.4s var(--ease-spring);
+  }
+
+  /* Errores */
+  .form-error-global {
+    background: hsla(0, 75%, 55%, 0.15);
+    border-left: 3px solid var(--danger);
+    padding: 1rem;
+    font-size: 0.85rem;
+    color: var(--danger);
+    margin-top: 1.5rem;
+    border-radius: 0 var(--r-md) var(--r-md) 0;
+  }
+
+  .form-disclaimer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-subtle);
+    margin-top: 1.5rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* Animación error consentimiento */
+  @keyframes pulse-err {
+    0%, 100% { transform: translateX(0); }
+    25%       { transform: translateX(-6px); }
+    75%       { transform: translateX(6px); }
+  }
+  .consent-wrapper.pulse-error .consent-label {
+    animation: pulse-err 0.4s var(--ease-spring);
+    border-color: var(--danger);
+    box-shadow: 0 0 0 2px hsla(0, 75%, 55%, 0.3);
+  }
+</style>

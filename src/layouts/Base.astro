@@ -1,0 +1,321 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  showDeviceFrame?: boolean;
+}
+
+const { 
+  title,
+  description = "Acumula cortes y gana un corte gratis en Molina's Barbería Premium — San Antonio, Chile.",
+  showDeviceFrame = false
+} = Astro.props;
+
+const activeDeviceFrame = showDeviceFrame && import.meta.env.DEV;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0D1117" />
+    
+    <!-- PWA / Web App capabilities -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Molina's" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- SEO -->
+    <title>{title} | Molina's Barbería Premium</title>
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Preconnect Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- OneSignal SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      // Registrar el Service Worker de OneSignal
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/OneSignalSDKWorker.js')
+            .then(reg => console.log('Service Worker registrado:', reg.scope))
+            .catch(err => console.error('Error al registrar Service Worker:', err));
+        });
+      }
+
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        // Inicializar con el ID de la app
+        await OneSignal.init({
+          appId: "8aae6512-4249-479d-a04a-2a1dd6e9d193", // ID de Molina's Premium
+          safari_web_id: "web.onesignal.auto.TU-SAFARI-ID", // Se autoconfigurará si configuras el dominio en OneSignal
+          notifyButton: {
+            enable: true,
+            text: {
+              'tip.state.unsubscribed': 'Suscribirse a las notificaciones',
+              'tip.state.subscribed': 'Estás suscrito a las notificaciones',
+              'tip.state.blocked': 'Has bloqueado las notificaciones',
+              'message.prenotify': 'Toca para recibir avisos de tus cortes gratis',
+              'message.action.subscribed': '¡Gracias por suscribirte!',
+              'message.action.resubscribed': 'Estás suscrito de nuevo',
+              'message.action.unsubscribed': 'Ya no recibirás notificaciones',
+              'dialog.main.title': 'Notificaciones del Club',
+              'dialog.main.button.subscribe': 'SUSCRIBIRSE',
+              'dialog.main.button.unsubscribe': 'DESUSCRIBIRSE',
+              'dialog.blocked.title': 'Desbloquear notificaciones',
+              'dialog.blocked.message': 'Sigue estas instrucciones para permitir las notificaciones:'
+            }
+          },
+          promptOptions: {
+            slidedown: {
+              prompts: [
+                {
+                  type: "push",
+                  autoPrompt: true,
+                  text: {
+                    actionMessage: "¿Deseas recibir un aviso cuando se te sume un corte?",
+                    acceptButton: "Permitir",
+                    cancelButton: "Más tarde"
+                  },
+                  delay: {
+                    pageViews: 1,
+                    timeDelay: 3
+                  }
+                }
+              ]
+            }
+          }
+        });
+      });
+    </script>
+    
+    <!-- Vanilla Tilt para físicas 3D (Antigravedad) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" integrity="sha512-wC/g5368cx-Oa07cW17k5P14qGvEa5PzCj/1Y1i0X1tOQ14xYk5Z5zD3g2A7Ld4zK2q5z7v7W9Z9Z1zZ2Z7xkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <style is:inline>
+      /* ============================================================
+         Simulador de iPhone para Escritorio
+         ============================================================ */
+      .app-device-wrapper {
+        width: 100%;
+        min-height: 100vh;
+        display: block;
+      }
+
+      .iphone-frame {
+        width: 100%;
+        min-height: 100vh;
+        position: relative;
+        background: #0D1117;
+      }
+
+      .iphone-island, .iphone-home, .desktop-mockup-info {
+        display: none;
+      }
+
+      .iphone-screen {
+        width: 100%;
+        min-height: 100vh;
+      }
+
+      /* Estilos para Escritorio (> 768px) */
+      @media (min-width: 769px) {
+        .app-device-wrapper.with-device-frame {
+          background: radial-gradient(circle at top left, #1c222c, #0b0e12);
+          overflow: hidden;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 4rem;
+          padding: 2rem;
+          box-sizing: border-box;
+        }
+
+        .app-device-wrapper.with-device-frame .iphone-frame {
+          display: block;
+          flex-shrink: 0;
+          position: relative;
+          width: 390px;
+          height: 844px;
+          border-radius: 48px;
+          background: #0d1117;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          box-shadow: 
+            0 0 0 12px #22252a, /* Borde interior (bezel) */
+            0 0 0 13px #15181b, /* Borde exterior */
+            0 25px 60px rgba(0, 0, 0, 0.8), /* Sombra proyectada */
+            0 0 100px rgba(197, 160, 89, 0.12); /* Brillo dorado de fondo */
+          overflow: hidden;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Hover sutil en 3D para el iPhone */
+        .app-device-wrapper.with-device-frame .iphone-frame:hover {
+          transform: translateY(-5px);
+          box-shadow: 
+            0 0 0 12px #22252a,
+            0 0 0 13px #15181b,
+            0 35px 80px rgba(0, 0, 0, 0.9),
+            0 0 120px rgba(197, 160, 89, 0.18);
+        }
+
+        /* Dynamic Island */
+        .app-device-wrapper.with-device-frame .iphone-island {
+          display: block;
+          position: absolute;
+          top: 15px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 115px;
+          height: 30px;
+          background: #000000;
+          border-radius: 20px;
+          z-index: 9999;
+          pointer-events: none;
+          box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.2);
+          border: 0.5px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Home Indicator */
+        .app-device-wrapper.with-device-frame .iphone-home {
+          display: block;
+          position: absolute;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 140px;
+          height: 5px;
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 3px;
+          z-index: 9999;
+          pointer-events: none;
+        }
+
+        .app-device-wrapper.with-device-frame .iphone-screen {
+          width: 100%;
+          height: 100%;
+          overflow-y: auto;
+          overflow-x: hidden;
+          position: relative;
+          padding-top: 40px; /* Espacio para la Dynamic Island */
+          padding-bottom: 25px; /* Espacio para la Home Bar */
+          box-sizing: border-box;
+          
+          /* Ocultar barra de desplazamiento */
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .app-device-wrapper.with-device-frame .iphone-screen::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* Panel de información lateral */
+        .app-device-wrapper.with-device-frame .desktop-mockup-info {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          max-width: 400px;
+          animation: fade-right 0.8s ease-out;
+        }
+
+        .app-device-wrapper.with-device-frame .mockup-logo {
+          font-size: 3rem;
+          margin-bottom: 1.5rem;
+          filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.3));
+        }
+
+        .app-device-wrapper.with-device-frame .mockup-title {
+          font-family: 'Outfit', 'Inter', sans-serif;
+          font-size: 2.8rem;
+          font-weight: 800;
+          line-height: 1.1;
+          background: linear-gradient(135deg, #FFF, #c5a059);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          margin: 0 0 0.5rem 0;
+        }
+
+        .app-device-wrapper.with-device-frame .mockup-subtitle {
+          font-size: 1.25rem;
+          color: #8A99AD;
+          margin: 0 0 1.5rem 0;
+          font-weight: 500;
+          letter-spacing: 0.02em;
+        }
+
+        .app-device-wrapper.with-device-frame .mockup-badge {
+          display: inline-block;
+          padding: 0.4rem 0.8rem;
+          background: rgba(197, 160, 89, 0.15);
+          border: 1px solid rgba(197, 160, 89, 0.3);
+          color: #c5a059;
+          font-size: 0.75rem;
+          font-weight: 700;
+          border-radius: 6px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin-bottom: 1.5rem;
+        }
+
+        .app-device-wrapper.with-device-frame .mockup-desc {
+          font-size: 1rem;
+          color: #8A99AD;
+          line-height: 1.6;
+          margin: 0;
+        }
+      }
+
+      /* Animación sutil de entrada */
+      @keyframes fade-right {
+        from {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {activeDeviceFrame ? (
+      <div class="app-device-wrapper with-device-frame">
+        <div class="iphone-frame" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-perspective="1000">
+          <div class="iphone-island"></div>
+          <div class="iphone-screen">
+            <slot />
+          </div>
+          <div class="iphone-home"></div>
+        </div>
+        
+        <div class="desktop-mockup-info">
+          <div class="mockup-logo">💈</div>
+          <h2 class="mockup-title">Loyalty Card</h2>
+          <p class="mockup-subtitle">Molina's Barbería Premium</p>
+          <div class="mockup-badge">Vista previa interactiva</div>
+          <p class="mockup-desc">
+            Interactúa con la maqueta de iPhone para simular el registro, ingreso de socios y la visualización de tu tarjeta VIP con geolocalización.
+          </p>
+        </div>
+      </div>
+    ) : (
+      <div class="app-device-wrapper">
+        <slot />
+      </div>
+    )}
+  </body>
+</html>

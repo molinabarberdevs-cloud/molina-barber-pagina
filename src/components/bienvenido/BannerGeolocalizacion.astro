@@ -1,0 +1,17 @@
+---
+// Este componente muestra la distancia del usuario a la barbería.
+---
+<div id="geo-banner" class="glass-panel anim" style="margin-bottom: 1.5rem; display: none; border: 1px solid rgba(255, 215, 0, 0.15); padding: 1.25rem;">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; text-align: left;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="font-size: 1.7rem;" id="geo-icon">📍</span>
+      <div>
+        <h3 id="geo-title" style="font-size: 0.95rem; font-weight: 700; color: var(--text);">Calculando tu distancia...</h3>
+        <p id="geo-desc" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; line-height: 1.4;"></p>
+      </div>
+    </div>
+    <a id="geo-map-btn" href="https://maps.google.com/?q=Maestranza+1703,+San+Antonio,+Chile" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.8rem; width: auto; flex-shrink: 0; display: none;">
+      🗺️ Ver Mapa
+    </a>
+  </div>
+</div>

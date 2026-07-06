@@ -1,0 +1,22 @@
+---
+// Este componente muestra el código QR único del cliente.
+---
+<div class="qr-section glass-panel" style="margin-bottom: 1.5rem;">
+  <div class="qr-header">
+    <span class="qr-badge">✦ TU PASE VIP</span>
+    <h2 style="font-family: var(--serif); font-size: 1.4rem; color: var(--text); margin-top: 0.5rem;">
+      Muestra este QR al llegar
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.5;">
+      La recepcionista lo escaneará y tu corte se sumará automáticamente.
+    </p>
+  </div>
+
+  <div class="qr-canvas-wrap">
+    <div id="qr-code" class="qr-canvas"></div>
+    <div class="qr-glow" aria-hidden="true"></div>
+  </div>
+
+  <p class="qr-rut-label mono" id="qr-rut-display">RUT: ---</p>
+  <p class="qr-barbero-label" id="qr-barbero-display" style="margin-top: 0.5rem; color: var(--gold); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.05em; display: none;">💈 Profesional: Cargando...</p>
+</div>

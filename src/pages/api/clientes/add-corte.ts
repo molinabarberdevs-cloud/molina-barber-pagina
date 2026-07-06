@@ -2,12 +2,19 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const { rut, pin } = await request.json();
+    const { rut } = await request.json();
 
-    if (!rut || !pin) {
-      return new Response(JSON.stringify({ error: 'RUT y PIN requeridos' }), { status: 400 });
+    if (!rut) {
+      return new Response(JSON.stringify({ error: 'RUT requerido' }), { status: 400 });
+    }
+
+    // Obtener el barbero autenticado desde el contexto (inyectado por el middleware)
+    // @ts-ignore
+    const barbero = locals.barbero;
+    if (!barbero) {
+      return new Response(JSON.stringify({ error: 'No autorizado. Inicie sesión.' }), { status: 401 });
     }
 
     const cleanRut = rut.replace(/[^0-9kK]/gi, '').toUpperCase();
@@ -18,38 +25,7 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: 'Configuración del servidor incompleta' }), { status: 500 });
     }
 
-    // 1. Validar el PIN del barbero (Master o base de datos)
-    let pinValido = false;
-    let barberoNombre = '';
-    const masterPin = import.meta.env.ADMIN_PIN || process.env.ADMIN_PIN || '6666';
-
-    if (pin === masterPin) {
-      pinValido = true;
-      barberoNombre = 'Administrador Master';
-    } else {
-      // Buscar en Supabase
-      const checkRes = await fetch(`${supabaseUrl}/rest/v1/barberos?select=nombre&pin=eq.${pin}&activo=eq.true`, {
-        method: 'GET',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
-      });
-
-      if (checkRes.ok) {
-        const checkData = await checkRes.json();
-        if (checkData && checkData.length > 0) {
-          pinValido = true;
-          barberoNombre = checkData[0].nombre;
-        }
-      }
-    }
-
-    if (!pinValido) {
-      return new Response(JSON.stringify({ error: 'PIN incorrecto o barbero inactivo' }), { status: 403 });
-    }
-
-    // 2. Obtener el cliente para saber sus cortes actuales
+    // 1. Obtener el cliente para saber sus cortes actuales
     const clientRes = await fetch(`${supabaseUrl}/rest/v1/clientes?select=*&rut=eq.${cleanRut}`, {
       method: 'GET',
       headers: {
@@ -71,7 +47,7 @@ export const POST: APIRoute = async ({ request }) => {
     const cliente = clientData[0];
     const nuevosCortes = cliente.cortes + 1;
 
-    // 3. Actualizar los cortes en Supabase
+    // 2. Actualizar los cortes en Supabase
     const updateRes = await fetch(`${supabaseUrl}/rest/v1/clientes?rut=eq.${cleanRut}`, {
       method: 'PATCH',
       headers: {
@@ -82,8 +58,8 @@ export const POST: APIRoute = async ({ request }) => {
       },
       body: JSON.stringify({ 
         cortes: nuevosCortes,
-        // Registrar cuál barbero hizo la última actualización
-        barbero: barberoNombre
+        // Registrar cuál barbero hizo la última actualización (obtenido de su cuenta Google)
+        barbero: barbero.nombre
       })
     });
 
@@ -92,7 +68,7 @@ export const POST: APIRoute = async ({ request }) => {
       throw new Error(`Error actualizando cortes: ${errText}`);
     }
 
-    // 4. Enviar notificación push con OneSignal de forma segura (Server-to-Server)
+    // 3. Enviar notificación push con OneSignal de forma segura (Server-to-Server)
     const onesignalAppId = "8aae6512-4249-479d-a04a-2a1dd6e9d193";
     const onesignalApiKey = import.meta.env.PUBLIC_ONESIGNAL_REST_API_KEY || process.env.PUBLIC_ONESIGNAL_REST_API_KEY || import.meta.env.ONESIGNAL_REST_API_KEY || process.env.ONESIGNAL_REST_API_KEY;
 
@@ -129,7 +105,7 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ 
       success: true, 
       cortes: nuevosCortes, 
-      barbero: barberoNombre 
+      barbero: barbero.nombre 
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

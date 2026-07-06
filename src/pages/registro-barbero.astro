@@ -1,0 +1,127 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Leemos mensajes de la URL
+const { searchParams } = Astro.url;
+const errorMessage = searchParams.get('error');
+const successMessage = searchParams.get('message');
+---
+
+<Base title="Registro de Barbero | Molina's Club">
+  <main class="wrap" style="padding-top: 4rem; padding-bottom: 4rem;">
+    <section class="login-box glass-panel">
+      <div class="logo">
+        <span class="logo-icon">✂️</span>
+        <div>
+          <span class="logo-name">Molina's</span>
+          <span class="logo-sub">Registro de Barbero</span>
+        </div>
+      </div>
+      <h1 class="display">Crear Cuenta</h1>
+      <p class="section-body">
+        Crea tu cuenta de barbero. Una vez creada, un administrador la revisará
+        para darte acceso al panel.
+      </p>
+      <form id="signup-form" novalidate>
+        <div class="input-group vertical">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="input"
+            placeholder="Correo electrónico"
+            required
+          />
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="input"
+            placeholder="Contraseña (mín. 6 caracteres)"
+            required
+          />
+        </div>
+        <p id="form-message" style="margin-top: 1rem; display: none;"></p>
+        <button type="submit" id="signup-button" class="btn btn-gold btn-full" style="margin-top: 1.5rem;">
+          Crear mi Cuenta
+        </button>
+      </form>
+      <a href="/admin" class="subtle-link">¿Ya tienes cuenta? Inicia sesión</a>
+    </section>
+  </main>
+</Base>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+
+  const form = document.getElementById('signup-form');
+  if (form) {
+    const button = document.getElementById('signup-button');
+    const messageEl = document.getElementById('form-message');
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      button.setAttribute('disabled', 'true');
+      button.textContent = 'Creando cuenta...';
+      messageEl.style.display = 'none';
+
+      // Asignamos el tipo correcto a los elementos para que TypeScript no marque error.
+      const emailInput = document.getElementById('email') as HTMLInputElement;
+      const passwordInput = document.getElementById('password') as HTMLInputElement;
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      const { data, error } = await supabase.auth.signUp({ email, password });
+
+      if (error) {
+        messageEl.textContent = 'Error: ' + error.message;
+        messageEl.className = 'error-msg';
+      } else {
+        const needsConfirmation = !data.user?.identities?.length;
+        messageEl.innerHTML = needsConfirmation
+          ? '¡Cuenta creada! Revisa tu correo para confirmar tu email. Luego, podrás <a href="/admin">iniciar sesión</a>.'
+          : '¡Cuenta creada con éxito! Ya puedes <a href="/admin">iniciar sesión</a>.';
+        messageEl.className = 'success-msg';
+        form.reset();
+      }
+ 
+      messageEl.style.display = 'block';
+      button.removeAttribute('disabled');
+      button.textContent = 'Crear mi Cuenta';
+    });
+  }
+</script>
+
+<style>
+  .subtle-link {
+    display: block;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .subtle-link:hover {
+    color: var(--gold);
+  }
+  .error-msg {
+    color: var(--danger);
+    font-size: 0.9rem;
+  }
+  .success-msg a, .error-msg a {
+    color: var(--gold);
+    text-decoration: underline;
+  }
+  .success-msg {
+    color: var(--success);
+    font-size: 0.9rem;
+  }
+  .success-box {
+    background: hsla(145, 63%, 42%, 0.15);
+    border-left: 3px solid var(--success);
+    padding: 1rem;
+    border-radius: 0 var(--r-md) var(--r-md) 0;
+  }
+</style>

@@ -1,0 +1,259 @@
+<section class="club wrap" id="club" aria-labelledby="club-title">
+  <div class="club-header anim">
+    <p class="section-eyebrow">Loyalty Program</p>
+    <h2 class="section-title display" id="club-title">Club Molina's</h2>
+    <p class="section-body">
+      Porque si ya eliges Molina's una y otra vez, mereces que se note. Cada
+      visita acumula — y la sexta te la regalamos.
+    </p>
+  </div>
+
+  <!-- Tarjeta de lealtad Glassmorphism -->
+  <div class="card-3d-wrap" id="card-3d-index">
+    <div
+      class="loyalty-card glass-panel"
+      role="img"
+      aria-label="Tarjeta del Club Molina's"
+    >
+      <!-- Destello animado sobre la tarjeta -->
+      <div class="card-glow"></div>
+
+      <div class="card-body">
+        <div class="card-top">
+          <span class="card-brand">Molina's Club</span>
+          <span class="card-since">Since 2020</span>
+        </div>
+
+        <div class="card-stamps" aria-label="Progreso de cortes: 1 de 5">
+          <div class="stamp active anim-pop d3">
+            <svg
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              width="14"
+              height="14"
+              aria-hidden="true"
+            >
+              <path
+                d="M8 1L9.8 5.6L14.7 6.1L11.2 9.2L12.4 14L8 11.4L3.6 14L4.8 9.2L1.3 6.1L6.2 5.6Z"
+              ></path>
+            </svg>
+          </div>
+          <div class="stamp" aria-label="Pendiente"></div>
+          <div class="stamp" aria-label="Pendiente"></div>
+          <div class="stamp" aria-label="Pendiente"></div>
+          <div class="stamp gift" aria-label="Premio">🎁</div>
+        </div>
+
+        <div class="card-bottom">
+          <div class="card-count">
+            <span class="card-num">1</span>
+            <span class="card-denom font-mono"> / 5</span>
+          </div>
+          <span class="card-label">visitas para tu regalo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA principal -->
+  <div class="club-cta anim d2">
+    <a href="/registro" class="btn btn-gold btn-full" id="btn-unirme-club">
+      Quiero unirme al Club
+    </a>
+    <a
+      href="/ingresar"
+      class="btn btn-ghost btn-full"
+      id="btn-login-club"
+      style="margin-top: 0.5rem;"
+    >
+      Ya soy miembro - Ver mi progreso
+    </a>
+  </div>
+
+  <!-- Features -->
+  <ul class="features glass-panel anim d3" role="list">
+    <li class="feature">
+      <div class="feature-icon">📱</div>
+      <div>
+        <strong>Google Wallet</strong> — Tu tarjeta siempre en tu teléfono,
+        actualizada mágicamente.
+      </div>
+    </li>
+    <li class="feature">
+      <div class="feature-icon">💬</div>
+      <div>
+        <strong>WhatsApp</strong> — Notificaciones discretas con tu progreso.
+      </div>
+    </li>
+    <li class="feature">
+      <div class="feature-icon">🛡️</div>
+      <div>
+        <strong>100% Protegido</strong> — Cumplimos la ley de protección de
+        datos.
+      </div>
+    </li>
+  </ul>
+</section>
+
+<style>
+  .club {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    padding-bottom: 4rem;
+    scroll-margin-top: 2rem;
+  }
+  .loyalty-card {
+    position: relative;
+    padding: 2rem;
+    overflow: hidden;
+  }
+  .card-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 40%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.05) 60%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg) translateY(-100%);
+    animation: shine 8s infinite;
+    pointer-events: none;
+  }
+  @keyframes shine {
+    0% {
+      transform: rotate(30deg) translateY(-100%);
+    }
+    20%,
+    100% {
+      transform: rotate(30deg) translateY(100%);
+    }
+  }
+  .card-body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-brand {
+    font-family: var(--sans);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+  .card-since {
+    font-size: 0.75rem;
+    color: var(--gold);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--r-full);
+  }
+  .card-stamps {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .stamp {
+    flex: 1;
+    aspect-ratio: 1;
+    max-width: 55px;
+    border-radius: var(--r-md);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  .stamp.active {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+    border: none;
+    color: var(--black);
+    box-shadow: 0 4px 15px var(--gold-glow),
+      inset 0 2px 4px rgba(255, 255, 255, 0.5);
+  }
+  .stamp.gift {
+    border: 1.5px dashed rgba(255, 255, 255, 0.2);
+    background: transparent;
+    font-size: 1.2rem;
+    box-shadow: none;
+  }
+  .card-bottom {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .card-count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .card-num {
+    font-family: var(--mono);
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    text-shadow: 0 0 20px var(--gold-glow);
+  }
+  .card-denom {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+  }
+  .card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+  .features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-radius: var(--r-xl);
+  }
+  .feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .feature strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .feature-icon {
+    font-size: 1.2rem;
+    background: rgba(0, 0, 0, 0.2);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+</style>

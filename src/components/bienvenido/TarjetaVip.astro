@@ -1,0 +1,49 @@
+---
+// Este componente es la tarjeta 3D que muestra el progreso de los cortes.
+---
+<div class="card-3d-wrap" id="card-3d-bienvenido" style="margin-top: 2rem; margin-bottom: 2rem;">
+  <div class="vip-card glass-panel">
+    
+    <!-- Destello animado -->
+    <div class="card-glow" aria-hidden="true"></div>
+    <!-- Borde dorado sutil animado -->
+    <div class="vip-shimmer" aria-hidden="true"></div>
+
+    <div class="vip-card-inner">
+      <!-- Header de la tarjeta -->
+      <div class="vip-top">
+        <div>
+          <span class="vip-brand">Loyalty Club</span>
+          <span class="vip-member-tag">✦ MIEMBRO VIP</span>
+        </div>
+        <span class="vip-count mono" id="card-count">0/5</span>
+      </div>
+
+      <!-- Estampas visuales de progreso -->
+      <div class="vip-stamps" id="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="5" aria-label="Progreso de cortes">
+        <div class="vip-stamp progress-node">
+          <span class="vip-stamp-icon">✂️</span>
+        </div>
+        <div class="vip-stamp progress-node">
+          <span class="vip-stamp-icon">✂️</span>
+        </div>
+        <div class="vip-stamp progress-node">
+          <span class="vip-stamp-icon">✂️</span>
+        </div>
+        <div class="vip-stamp progress-node">
+          <span class="vip-stamp-icon">✂️</span>
+        </div>
+        <div class="vip-stamp vip-stamp-gift progress-node">
+          <span class="vip-stamp-icon">🎁</span>
+        </div>
+      </div>
+
+      <!-- Mensaje de progreso -->
+      <div class="vip-bottom">
+        <p class="vip-progress-msg" id="progress-desc">
+          Calculando visitas restantes...
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+---
+// Este componente es la guía flotante exclusiva para iOS Safari.
+---
+<div id="ios-tooltip" class="glass-panel" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); max-width: 380px; z-index: 9999; border: 1px solid rgba(255, 215, 0, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(255,215,0,0.1); padding: 1.25rem; border-radius: var(--r-lg); animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);">
+  <div style="position: relative; text-align: center;">
+    <button id="btn-close-ios-tooltip" style="position: absolute; top: -10px; right: -10px; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 0.5rem;" aria-label="Cerrar">✕</button>
+    <p style="font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem;">📱 Guarda esta Tarjeta en tu iPhone</p>
+    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.5rem;">
+      Para recibir notificaciones y tener tu QR a mano, toca el botón de <strong>Compartir</strong> <svg style="display:inline; vertical-align:middle; margin-inline: 2px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> abajo en tu navegador y selecciona <strong>Añadir a inicio</strong>.
+    </p>
+    <!-- Flechas animadas apuntando abajo (al botón de compartir de Safari) -->
+    <div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid rgba(255, 215, 0, 0.35); position: absolute; bottom: -31px; left: 50%; transform: translateX(-50%); animation: point-down 1.5s ease-in-out infinite;"></div>
+    <div style="width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 9px solid #14120e; position: absolute; bottom: -29px; left: 50%; transform: translateX(-50%);"></div>
+  </div>
+</div>

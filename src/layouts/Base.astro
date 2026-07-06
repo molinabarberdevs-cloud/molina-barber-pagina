@@ -55,8 +55,9 @@ const activeDeviceFrame = showDeviceFrame && import.meta.env.DEV;
         });
       }
 
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
+      // Corregimos el error de tipo indicando a TypeScript que `window` puede tener esta propiedad.
+      (window as any).OneSignalDeferred = (window as any).OneSignalDeferred || [];
+      (window as any).OneSignalDeferred.push(async function(OneSignal: any) {
         // Inicializar con el ID de la app
         await OneSignal.init({
           appId: "8aae6512-4249-479d-a04a-2a1dd6e9d193", // ID de Molina's Premium

@@ -1,5 +1,9 @@
 ---
 import Base from "../layouts/Base.astro";
+
+export const prerender = false;
+
+const barbero = Astro.locals.barbero;
 ---
 
 <Base
@@ -27,48 +31,14 @@ import Base from "../layouts/Base.astro";
           </svg>
           Admin
         </a>
-        <span class="escaner-title">📷 Escáner QR</span>
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+          <span class="escaner-title">📷 Escáner QR</span>
+          {barbero && <span style="font-size: 0.7rem; color: var(--gold); font-weight: 600;">💈 {barbero.nombre}</span>}
+        </div>
       </header>
 
-      <!-- PIN Section -->
-      <div id="pin-section" class="glass-panel escaner-panel anim-pop d1">
-        <div class="escaner-pin-icon">🔒</div>
-        <h2
-          style="font-size: 1.3rem; color: var(--text); margin-bottom: 0.5rem;"
-        >
-          Acceso Recepción
-        </h2>
-        <p
-          style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;"
-        >
-          Ingresa el PIN para activar el escáner.
-        </p>
-        <div class="field">
-          <input
-            id="input-pin"
-            type="password"
-            class="input mono"
-            placeholder="****"
-            inputmode="numeric"
-            maxlength="4"
-            style="text-align: center; font-size: 1.5rem; letter-spacing: 0.3em;"
-          />
-        </div>
-        <p
-          id="pin-error"
-          style="display:none; color: var(--danger); font-size: 0.85rem; margin-top: 0.5rem; text-align: center;"
-        >
-          PIN incorrecto
-        </p>
-        <button
-          id="btn-pin"
-          class="btn btn-gold btn-full"
-          style="margin-top: 1.5rem;">Activar Escáner</button
-        >
-      </div>
-
-      <!-- Scanner Section (oculto hasta PIN) -->
-      <div id="scanner-section" style="display: none;">
+      <!-- Scanner Section (Visible por defecto ya que el middleware valida el acceso) -->
+      <div id="scanner-section">
         <!-- Cámara -->
         <div class="scanner-cam-wrap glass-panel anim-pop">
           <div id="reader" class="scanner-viewport"></div>
@@ -182,77 +152,13 @@ import Base from "../layouts/Base.astro";
   let currentClientData: any = null;
   let html5QrCode: any = null;
 
-  // ═══ PIN ═══
-  const pinSec = document.getElementById("pin-section") as HTMLDivElement;
-  const scannerSec = document.getElementById(
-    "scanner-section",
-  ) as HTMLDivElement;
-  const btnPin = document.getElementById("btn-pin") as HTMLButtonElement;
-  const inputPin = document.getElementById("input-pin") as HTMLInputElement;
-  const pinError = document.getElementById("pin-error") as HTMLElement;
-
-  btnPin?.addEventListener("click", async () => {
-    const enteredPin = inputPin.value;
-    btnPin.disabled = true;
-    pinError.style.display = "none";
-
-    try {
-      const res = await fetch('/api/admin/verify-pin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: enteredPin })
-      });
-      const data = await res.json();
-
-      if (res.ok && data.valid) {
-        sessionStorage.setItem('barberPin', enteredPin);
-        pinSec.style.display = "none";
-        scannerSec.style.display = "block";
-        startScanner();
-
-        // Check if came from a QR link with rut param
-        const params = new URLSearchParams(window.location.search);
-        const rutParam = params.get("rut");
-        if (rutParam) {
-          buscarCliente(rutParam);
-        }
-      } else {
-        pinError.textContent = data.error || 'PIN incorrecto';
-        pinError.style.display = "block";
-        inputPin.value = "";
-      }
-    } catch (e) {
-      pinError.textContent = 'Error de conexión';
-      pinError.style.display = "block";
-    } finally {
-      btnPin.disabled = false;
-    }
-  });
-
-  inputPin?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") btnPin?.click();
-  });
-
-  // Auto-login si ya existe PIN verificado en sessionStorage
+  // Inicializar escáner directamente
   document.addEventListener('DOMContentLoaded', () => {
-    const savedPin = sessionStorage.getItem('barberPin');
-    if (savedPin) {
-      fetch('/api/admin/verify-pin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: savedPin })
-      }).then(res => res.json()).then(data => {
-        if (data.valid) {
-          pinSec.style.display = "none";
-          scannerSec.style.display = "block";
-          startScanner();
-          const params = new URLSearchParams(window.location.search);
-          const rutParam = params.get("rut");
-          if (rutParam) {
-            buscarCliente(rutParam);
-          }
-        }
-      }).catch(err => console.error('Auto PIN check failed:', err));
+    startScanner();
+    const params = new URLSearchParams(window.location.search);
+    const rutParam = params.get("rut");
+    if (rutParam) {
+      buscarCliente(rutParam);
     }
   });
 
@@ -379,14 +285,12 @@ import Base from "../layouts/Base.astro";
     btnSumarLoading.hidden = false;
 
     try {
-      const enteredPin = sessionStorage.getItem('barberPin') || '';
-      
+      // La API add-corte ya no requiere el PIN manual, se autovalida por cookies en el middleware
       const res = await fetch('/api/clientes/add-corte', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          rut: currentClientData.rut,
-          pin: enteredPin 
+          rut: currentClientData.rut
         })
       });
 
@@ -498,12 +402,6 @@ import Base from "../layouts/Base.astro";
 
   .escaner-panel {
     padding: 2rem;
-    margin-bottom: 1rem;
-  }
-
-  .escaner-pin-icon {
-    font-size: 2.5rem;
-    text-align: center;
     margin-bottom: 1rem;
   }
 

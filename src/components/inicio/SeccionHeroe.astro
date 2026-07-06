@@ -1,0 +1,237 @@
+<section class="hero" aria-label="Bienvenida Molina's Barbería Premium">
+  <!-- Imagen de fondo -->
+  <div class="hero-bg">
+    <img
+      src="/photos/foto-equipo-limpia.png"
+      alt="Interior de Molina's Barbería Premium"
+      class="hero-img"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="hero-overlay" aria-hidden="true"></div>
+  </div>
+
+  <!-- Header / Logo -->
+  <header class="hero-header wrap anim">
+    <div class="logo">
+      <span class="logo-icon anim-pop d1">✂️</span>
+      <div>
+        <span class="logo-name">Molina's</span>
+        <span class="logo-sub">Barbería Premium</span>
+      </div>
+    </div>
+    <div class="location-chip glass-panel">
+      <span class="chip-dot" aria-hidden="true"></span>
+      San Antonio
+    </div>
+  </header>
+
+  <!-- Contenido -->
+  <div class="hero-content wrap">
+    <div class="hero-text anim d2">
+      <p class="eyebrow">Since 2020</p>
+      <h1 class="hero-headline display">
+        No es solo<br />
+        un corte.<br />
+        <em class="display-italic">Es presencia.</em>
+      </h1>
+      <p class="hero-desc">
+        El ambiente exclusivo, la atención de primera y el estilo que te hace
+        destacar — todo bajo un mismo techo.
+      </p>
+    </div>
+
+    <div class="hero-cta anim d3">
+      <a href="#club" class="btn-hero" id="btn-ver-club">
+        Descubrir el Club
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          width="18"
+          height="18"
+          aria-hidden="true"
+        >
+          <path
+            d="M10 4v12M4 10l6 6 6-6"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+      </a>
+      <p class="hero-cta-sub">100% Gratis · Sin apps · Solo beneficios</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+  .hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    filter: brightness(0.65) saturate(1.1);
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      hsla(240, 20%, 5%, 0.4) 0%,
+      var(--bg) 95%
+    );
+  }
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+  .hero-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 2rem;
+    position: relative;
+    z-index: 2;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .logo-icon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+  }
+  .logo-name {
+    display: block;
+    font-family: var(--sans);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1;
+  }
+  .logo-sub {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 4px;
+  }
+  .location-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--r-full);
+  }
+  .chip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      opacity: 0.5;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    display: inline-block;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+  }
+  .hero-headline {
+    font-size: clamp(3rem, 13vw, 4.8rem);
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  }
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 380px;
+    font-weight: 400;
+  }
+  .hero-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .btn-hero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1.125rem 1.5rem;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--r-full);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all var(--ease-spring);
+  }
+  .btn-hero:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+  .btn-hero:active {
+    transform: scale(0.96);
+  }
+  .hero-cta-sub {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-subtle);
+    letter-spacing: 0.02em;
+  }
+</style>

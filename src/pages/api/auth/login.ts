@@ -18,7 +18,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     auth: {
       storage: {
         getItem: (key) => cookies.get(key)?.value || null,
-        setItem: (key, value) => cookies.set(key, value, { path: '/' }),
+        setItem: (key, value) => cookies.set(key, value, { 
+          path: '/', 
+          maxAge: 60 * 60 * 24 * 30, // 30 días
+          secure: true,
+          sameSite: 'lax'
+        }),
         removeItem: (key) => cookies.delete(key, { path: '/' }),
       },
     },

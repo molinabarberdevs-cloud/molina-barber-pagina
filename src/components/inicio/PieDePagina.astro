@@ -9,6 +9,7 @@
   >
     @molinasbarberia
   </a>
+  <a href="/admin" class="footer-admin-link">🔒 Acceso Equipo</a>
 </footer>
 
 <style>
@@ -33,5 +34,17 @@
     color: var(--text);
     font-weight: 600;
     text-decoration: none;
+  }
+  .footer-admin-link {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-decoration: none;
+    margin-top: 0.5rem;
+    opacity: 0.5;
+    transition: opacity var(--ease-normal), color var(--ease-normal);
+  }
+  .footer-admin-link:hover {
+    opacity: 1;
+    color: var(--gold);
   }
 </style>

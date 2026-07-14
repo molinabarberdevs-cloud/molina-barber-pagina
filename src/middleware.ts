@@ -11,7 +11,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
       // Le decimos que busque las cookies de sesión que Astro guarda
       storage: {
         getItem: (key) => context.cookies.get(key)?.value || null,
-        setItem: (key, value) => context.cookies.set(key, value, { path: '/' }),
+        setItem: (key, value) => context.cookies.set(key, value, { 
+          path: '/', 
+          maxAge: 60 * 60 * 24 * 30, // 30 días
+          secure: true,
+          sameSite: 'lax'
+        }),
         removeItem: (key) => context.cookies.delete(key, { path: '/' }),
       },
     },

@@ -25,14 +25,30 @@ export function inicializarBannerPush() {
 
   if (window.OneSignalDeferred) {
     window.OneSignalDeferred.push(async function(OneSignal) {
-      // No mostrar si ya tiene permisos
-      if (OneSignal.Notifications.permission === 'granted') {
-        return;
+      
+      // Función para actualizar la visibilidad y contenido del banner según permisos reales
+      function actualizarEstadoBanner(permission) {
+        if (permission === 'granted') {
+          banner.style.display = 'none';
+        } else if (permission === 'denied') {
+          banner.style.display = 'block';
+          pushTitle.textContent = "Notificaciones Bloqueadas 🔕";
+          pushDesc.textContent = "Has denegado las notificaciones. Habilita los permisos en la configuración de tu navegador para recibir alertas.";
+          btn.style.display = 'none';
+        } else {
+          banner.style.display = 'block';
+        }
       }
 
-      banner.style.display = 'block';
+      // Evaluar estado inicial
+      actualizarEstadoBanner(OneSignal.Notifications.permission);
 
-      // En iOS, solo se puede pedir permiso si la app está instalada (standalone)
+      // Escuchar cambios de permisos en tiempo real
+      OneSignal.Notifications.addEventListener("permissionChange", function(permission) {
+        actualizarEstadoBanner(permission);
+      });
+
+      // Lógica de clic según el sistema operativo
       if (isIOS && !isStandalone) {
         pushTitle.textContent = "Activar en iPhone 📲";
         pushDesc.textContent = "Apple requiere guardar la app primero. Toca Compartir y luego 'Añadir a inicio'.";
@@ -45,7 +61,6 @@ export function inicializarBannerPush() {
         btn.addEventListener('click', async () => {
           try {
             await OneSignal.Notifications.requestPermission();
-            // El listener de OneSignal se encargará de ocultar el banner si se acepta
           } catch (e) {
             console.error("Error al solicitar permiso push:", e);
           }

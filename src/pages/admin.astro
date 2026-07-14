@@ -69,9 +69,14 @@ const successMessage = searchParams.get('message');
                 Bienvenido. Desde aquí puedes gestionar los clientes del club.
               </p>
             </div>
-            <a href="/api/auth/signout" class="btn btn-ghost">
-              Cerrar Sesión
-            </a>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; justify-content: flex-end;">
+              <a href="/escaner" class="btn btn-gold" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">
+                📷 Escanear QR
+              </a>
+              <a href="/api/auth/signout" class="btn btn-ghost" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">
+                Salir
+              </a>
+            </div>
           </header>
 
            {/* Sección de Búsqueda y Suma de Cortes */}
